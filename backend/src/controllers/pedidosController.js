@@ -1,7 +1,13 @@
 const pool = require('../db/pool');
 
+// listo_en se formatea con to_char (texto plano en la zona horaria de la
+// sesion) en vez de dejar que node-postgres lo convierta a un objeto Date:
+// un TIMESTAMP sin zona horaria se reinterpreta con la zona horaria del
+// propio proceso de Node al construir ese Date, lo que puede desfasar la
+// hora mostrada si esa zona no coincide con la de la sesion de Postgres.
 const SELECT_PEDIDO_CON_MESERA = `
-  SELECT p.id, p.texto_pedido, p.estado, p.fecha, p.hora_creacion, p.creado_en, p.listo_en,
+  SELECT p.id, p.texto_pedido, p.estado, p.fecha, p.hora_creacion, p.turno, p.numero_turno,
+         p.creado_en, to_char(p.listo_en, 'YYYY-MM-DD"T"HH24:MI:SS') AS listo_en,
          m.id AS mesera_id, m.nombre AS mesera_nombre
   FROM pedidos p
   JOIN meseras m ON m.id = p.mesera_id
@@ -14,6 +20,8 @@ function serializePedido(row) {
     estado: row.estado,
     fecha: row.fecha,
     hora_creacion: row.hora_creacion,
+    turno: row.turno,
+    numero_turno: row.numero_turno,
     creado_en: row.creado_en,
     listo_en: row.listo_en,
     mesera: { id: row.mesera_id, nombre: row.mesera_nombre },
@@ -28,12 +36,23 @@ function crearPedido(io) {
       return res.status(400).json({ error: 'texto_pedido es requerido' });
     }
 
+    const corteAlmuerzo = process.env.TURNO_ALMUERZO_DESDE || '11:00';
+
     try {
       const result = await pool.query(
-        `INSERT INTO pedidos (mesera_id, texto_pedido)
-         VALUES ($1, $2)
+        `INSERT INTO pedidos (mesera_id, texto_pedido, turno, numero_turno)
+         VALUES (
+           $1, $2,
+           CASE WHEN CURRENT_TIME >= $3::time THEN 'almuerzo' ELSE 'desayuno' END,
+           (
+             SELECT COALESCE(MAX(numero_turno), 0) + 1
+             FROM pedidos
+             WHERE fecha = CURRENT_DATE
+               AND turno = CASE WHEN CURRENT_TIME >= $3::time THEN 'almuerzo' ELSE 'desayuno' END
+           )
+         )
          RETURNING id`,
-        [req.mesera.id, texto_pedido.trim()]
+        [req.mesera.id, texto_pedido.trim(), corteAlmuerzo]
       );
 
       const pedidoId = result.rows[0].id;

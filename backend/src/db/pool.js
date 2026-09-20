@@ -8,4 +8,12 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
 });
 
+// Por defecto Postgres guarda fechas/horas en UTC. Se fija la zona horaria de
+// cada sesion para que CURRENT_DATE/CURRENT_TIME/NOW() reflejen la hora local
+// del restaurante (necesario para el corte desayuno/almuerzo y para que las
+// horas mostradas en el tablero tengan sentido).
+pool.on('connect', (client) => {
+  client.query(`SET TIME ZONE '${process.env.TZ || 'America/Bogota'}'`);
+});
+
 module.exports = pool;

@@ -13,5 +13,7 @@ data class PedidoResponse(
     val texto_pedido: String,
     val estado: String,
     val fecha: String,
-    val hora_creacion: String
+    val hora_creacion: String,
+    val turno: String,
+    val numero_turno: Int
 )

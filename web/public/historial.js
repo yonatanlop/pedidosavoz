@@ -22,15 +22,20 @@
     return div.innerHTML;
   }
 
+  function tituloTurno(turno) {
+    return turno === 'almuerzo' ? 'Almuerzo' : 'Desayuno';
+  }
+
   function renderPedido(pedido) {
     const card = document.createElement('article');
     card.className = 'card card-historial';
     card.dataset.id = pedido.id;
     card.innerHTML = `
       <div class="card-header">
-        <span class="mesera">${escapeHtml(pedido.mesera.nombre)}</span>
+        <span class="numero">${tituloTurno(pedido.turno)} #${pedido.numero_turno}</span>
         <span class="hora">${formatHora(pedido.hora_creacion)} → ${formatHora(pedido.listo_en ? pedido.listo_en.slice(11) : '')}</span>
       </div>
+      <div class="card-mesera">${escapeHtml(pedido.mesera.nombre)}</div>
       <p class="texto">${escapeHtml(pedido.texto_pedido)}</p>
     `;
     return card;

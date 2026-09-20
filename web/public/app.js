@@ -20,17 +20,22 @@
     emptyMsg.hidden = pedidos.size > 0;
   }
 
+  function tituloTurno(turno) {
+    return turno === 'almuerzo' ? 'Almuerzo' : 'Desayuno';
+  }
+
   function renderPedido(pedido) {
     const card = document.createElement('article');
     card.className = 'card';
     card.dataset.id = pedido.id;
     card.innerHTML = `
       <div class="card-header">
-        <span class="mesera">${escapeHtml(pedido.mesera.nombre)}</span>
+        <span class="numero">${tituloTurno(pedido.turno)} #${pedido.numero_turno}</span>
         <span class="hora">${formatHora(pedido.hora_creacion)}</span>
       </div>
+      <div class="card-mesera">${escapeHtml(pedido.mesera.nombre)}</div>
       <p class="texto">${escapeHtml(pedido.texto_pedido)}</p>
-      <button class="btn-listo" type="button">Listo &#10003;</button>
+      <button class="btn-listo" type="button">Pedido #${pedido.numero_turno} listo &#10003;</button>
     `;
     card.querySelector('.btn-listo').addEventListener('click', () => marcarListo(pedido.id, card));
     return card;

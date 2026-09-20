@@ -76,8 +76,9 @@ class PedidoViewModel(application: Application) : AndroidViewModel(application) 
             try {
                 val api = ApiClient.create(session.serverUrl)
                 val response = api.crearPedido("Bearer $token", PedidoRequest(texto))
-                if (response.isSuccessful) {
-                    mensaje = "Pedido enviado"
+                val body = response.body()
+                if (response.isSuccessful && body != null) {
+                    mensaje = "Pedido #${body.numero_turno} enviado"
                     textoPedido = ""
                     voiceState = VoiceState.Idle
                 } else {

@@ -21,6 +21,14 @@ Para crear una mesera de prueba una vez que los contenedores estén arriba:
 docker compose exec backend npm run seed
 ```
 
+### Aplicar cambios de esquema a una base de datos ya existente
+
+`src/db/init.sql` solo se aplica en un volumen nuevo. Si ya tienes datos y se agregan columnas nuevas (como `turno`/`numero_turno`), aplica la migracion idempotente:
+
+```bash
+docker compose exec -T postgres psql -U "$DB_USER" -d "$DB_NAME" -f - < backend/src/db/migrate.sql
+```
+
 ## Correr sin Docker (desarrollo)
 
 ```bash
@@ -49,9 +57,9 @@ psql "$DATABASE_URL" -f src/db/init.sql
 ### Pedidos
 
 - `POST /api/pedidos` — crea un pedido (usado por la app Android). Requiere `Authorization: Bearer <token>`.
-  Body: `{ "texto_pedido": "una arepa con queso y un cafe con leche" }`
+  Body: `{ "texto_pedido": "una arepa con queso y un cafe con leche" }`. La respuesta incluye `turno` (`"desayuno"` o `"almuerzo"`, segun la hora local y el corte configurado en `TURNO_ALMUERZO_DESDE`) y `numero_turno` (correlativo que reinicia en 1 en cada turno y cada dia).
 - `GET /api/pedidos?estado=pendiente&fecha=2026-09-19` — lista pedidos (usado por la pantalla web: tablero con `estado=pendiente`, historial con `estado=listo`). Filtros opcionales.
-- `PATCH /api/pedidos/:id/listo` — marca un pedido como listo (usado por la pantalla de cocina).
+- `PATCH /api/pedidos/:id/listo` — marca un pedido como listo (usado por la pantalla de cocina). Guarda `listo_en` con la fecha/hora local de despacho.
 
 ### Tiempo real (Socket.io)
 

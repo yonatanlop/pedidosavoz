@@ -131,9 +131,11 @@ main {
 }
 
 .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 760px;
+  margin: 0 auto;
 }
 
 .card {
@@ -156,11 +158,18 @@ main {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-size: 1.05rem;
+  font-size: 1.15rem;
 }
 
-.mesera {
+.numero {
+  font-weight: 700;
+}
+
+.mesera,
+.card-mesera {
   font-weight: 600;
+  color: var(--text-dim);
+  font-size: 0.95rem;
 }
 
 .hora {
