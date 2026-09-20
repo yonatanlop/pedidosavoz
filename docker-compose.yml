@@ -30,5 +30,13 @@ services:
     ports:
       - "3000:3000"
 
+  web:
+    build: ./web
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8090:80"
+
 volumes:
   pedidosavoz_pgdata:

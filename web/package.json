@@ -1,0 +1,9 @@
+{
+  "name": "pedidosavoz-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cliente de socket.io empaquetado para el tablero de pedidos (no requiere build, solo se copia el bundle)",
+  "dependencies": {
+    "socket.io-client": "^4.7.5"
+  }
+}

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PedidosVoz - Tablero de cocina</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Pedidos pendientes</h1>
+    <div class="topbar-right">
+      <span id="conn-status" class="status">Conectando...</span>
+      <span id="reloj" class="reloj"></span>
+    </div>
+  </header>
+
+  <main>
+    <p id="empty" class="empty" hidden>No hay pedidos pendientes 🎉</p>
+    <div id="grid" class="grid"></div>
+  </main>
+
+  <script src="vendor/socket.io.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

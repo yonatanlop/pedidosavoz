@@ -5,23 +5,32 @@ Sistema de pedidos de desayuno/almuerzo dictados por voz. Una mesera dicta el pe
 ## Componentes
 
 - **`backend/`** — API Node.js/Express + Socket.io + PostgreSQL. Guarda cada pedido con fecha, hora, texto completo y la mesera que lo hizo. ([docs](backend/README.md))
-- **`web/`** — Pantalla de pedidos en tiempo real para cocina. *(pendiente)*
+- **`web/`** — Pantalla de pedidos en tiempo real para cocina (HTML/JS + nginx como proxy). ([docs](web/README.md))
 - **`android/`** — App para que las meseras dicten el pedido por voz. *(pendiente)*
 - **`docker-compose.yml`** — Orquesta todo para correr localmente o desplegar en una VM de Oracle Cloud (OCI).
 
 ## Estado del proyecto
 
 1. ✅ Backend + base de datos + docker-compose
-2. ⬜ Web app del tablero de pedidos
+2. ✅ Web app del tablero de pedidos
 3. ⬜ App Android (login + dictado por voz)
 4. ⬜ Integración end-to-end
 5. ⬜ Despliegue en Oracle Cloud (OCI)
 
-## Levantar el backend en local
+## Levantar todo en local
 
 ```bash
 cp backend/.env.example backend/.env
 docker compose up --build
 ```
 
-Ver [backend/README.md](backend/README.md) para el detalle de la API.
+- Backend: `http://localhost:3000`
+- Tablero web: `http://localhost:8090`
+
+Crear una mesera de prueba:
+
+```bash
+docker compose exec backend npm run seed
+```
+
+Ver [backend/README.md](backend/README.md) y [web/README.md](web/README.md) para el detalle de cada componente.
