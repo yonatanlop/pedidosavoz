@@ -1,8 +1,31 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const pool = require('../db/pool');
 
 const SALT_ROUNDS = 10;
+
+// Token largo porque el autoregistro no tiene password: la mesera "inicia
+// sesion" una sola vez al instalar la app y el token queda guardado en el
+// dispositivo hasta que alguien presione "Salir".
+const EXPIRES_IN_AUTOREGISTRO = '180d';
+
+function firmarToken(mesera) {
+  return jwt.sign(
+    { id: mesera.id, nombre: mesera.nombre, usuario: mesera.usuario },
+    process.env.JWT_SECRET,
+    { expiresIn: EXPIRES_IN_AUTOREGISTRO }
+  );
+}
+
+function slugify(nombre) {
+  const base = nombre
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '');
+  return base.slice(0, 20) || 'mesera';
+}
 
 async function register(req, res) {
   const { nombre, usuario, password } = req.body;
@@ -65,4 +88,37 @@ async function login(req, res) {
   }
 }
 
-module.exports = { register, login };
+async function autoregistro(req, res) {
+  const { nombre } = req.body;
+
+  if (!nombre || !nombre.trim()) {
+    return res.status(400).json({ error: 'nombre es requerido' });
+  }
+
+  const nombreLimpio = nombre.trim();
+  const base = slugify(nombreLimpio);
+  const passwordAleatoria = crypto.randomBytes(16).toString('hex');
+  const passwordHash = await bcrypt.hash(passwordAleatoria, SALT_ROUNDS);
+
+  for (let intento = 0; intento < 5; intento++) {
+    const usuario = intento === 0 ? base : `${base}${Math.floor(1000 + Math.random() * 9000)}`;
+    try {
+      const result = await pool.query(
+        `INSERT INTO meseras (nombre, usuario, password_hash)
+         VALUES ($1, $2, $3)
+         RETURNING id, nombre, usuario`,
+        [nombreLimpio, usuario, passwordHash]
+      );
+      const mesera = result.rows[0];
+      return res.status(201).json({ token: firmarToken(mesera), mesera });
+    } catch (err) {
+      if (err.code === '23505') continue; // usuario duplicado, reintentar con sufijo
+      console.error(err);
+      return res.status(500).json({ error: 'Error registrando la mesera' });
+    }
+  }
+
+  res.status(500).json({ error: 'No se pudo generar un usuario unico, intenta de nuevo' });
+}
+
+module.exports = { register, login, autoregistro };

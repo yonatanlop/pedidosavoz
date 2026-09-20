@@ -7,8 +7,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.pedidosavoz.app.data.ApiClient
-import com.pedidosavoz.app.data.LoginRequest
 import com.pedidosavoz.app.data.PedidoRequest
+import com.pedidosavoz.app.data.RegistroRequest
 import com.pedidosavoz.app.data.SessionManager
 import com.pedidosavoz.app.voice.VoiceState
 import kotlinx.coroutines.launch
@@ -23,9 +23,9 @@ class PedidoViewModel(application: Application) : AndroidViewModel(application) 
         private set
     var serverUrl by mutableStateOf(session.serverUrl)
         private set
-    var loginLoading by mutableStateOf(false)
+    var registroLoading by mutableStateOf(false)
         private set
-    var loginError by mutableStateOf<String?>(null)
+    var registroError by mutableStateOf<String?>(null)
         private set
 
     var voiceState by mutableStateOf<VoiceState>(VoiceState.Idle)
@@ -39,13 +39,15 @@ class PedidoViewModel(application: Application) : AndroidViewModel(application) 
         session.serverUrl = url
     }
 
-    fun login(usuario: String, password: String) {
-        loginLoading = true
-        loginError = null
+    fun registrarse(nombre: String) {
+        if (nombre.isBlank()) return
+
+        registroLoading = true
+        registroError = null
         viewModelScope.launch {
             try {
                 val api = ApiClient.create(session.serverUrl)
-                val response = api.login(LoginRequest(usuario, password))
+                val response = api.registrar(RegistroRequest(nombre))
                 val body = response.body()
                 if (response.isSuccessful && body != null) {
                     session.token = body.token
@@ -53,12 +55,12 @@ class PedidoViewModel(application: Application) : AndroidViewModel(application) 
                     meseraNombre = body.mesera.nombre
                     loggedIn = true
                 } else {
-                    loginError = "Usuario o contrasena invalidos"
+                    registroError = "No se pudo registrar, intenta de nuevo"
                 }
             } catch (e: Exception) {
-                loginError = "No se pudo conectar al servidor"
+                registroError = "No se pudo conectar al servidor"
             } finally {
-                loginLoading = false
+                registroLoading = false
             }
         }
     }

@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
-import com.pedidosavoz.app.ui.LoginScreen
 import com.pedidosavoz.app.ui.PedidoScreen
+import com.pedidosavoz.app.ui.RegistroScreen
 import com.pedidosavoz.app.ui.theme.PedidosVozTheme
 import com.pedidosavoz.app.voice.VoiceRecognizer
 import com.pedidosavoz.app.voice.VoiceState
@@ -49,12 +49,12 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     } else {
-                        LoginScreen(
+                        RegistroScreen(
                             serverUrl = viewModel.serverUrl,
                             onServerUrlChange = { viewModel.actualizarServerUrl(it) },
-                            loading = viewModel.loginLoading,
-                            errorMessage = viewModel.loginError,
-                            onLogin = { usuario, password -> viewModel.login(usuario, password) }
+                            loading = viewModel.registroLoading,
+                            errorMessage = viewModel.registroError,
+                            onRegistrar = { nombre -> viewModel.registrarse(nombre) }
                         )
                     }
                 }

@@ -1,10 +1,10 @@
 package com.pedidosavoz.app.data
 
-data class LoginRequest(val usuario: String, val password: String)
+data class RegistroRequest(val nombre: String)
 
 data class Mesera(val id: Int, val nombre: String, val usuario: String)
 
-data class LoginResponse(val token: String, val mesera: Mesera)
+data class RegistroResponse(val token: String, val mesera: Mesera)
 
 data class PedidoRequest(val texto_pedido: String)
 

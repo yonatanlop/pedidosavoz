@@ -4,10 +4,10 @@ App Kotlin (Jetpack Compose) para que las meseras dicten el pedido por voz.
 
 ## Flujo
 
-1. **Login** contra `POST /api/auth/login`. El token JWT y el nombre de la mesera se guardan cifrados en el dispositivo (`EncryptedSharedPreferences`).
+1. **Registro por nombre**: al abrir la app por primera vez, pide solo el nombre de la mesera (sin usuario ni contrasena) y llama a `POST /api/auth/registro`. El backend crea la cuenta y devuelve un token JWT de larga duracion (180 dias) que se guarda cifrado en el dispositivo (`EncryptedSharedPreferences`) — no vuelve a pedir el nombre hasta que alguien presione "Salir" (util si varias meseras comparten un mismo telefono/tablet).
 2. **Pantalla de pedido**: boton de microfono grande que usa `SpeechRecognizer` de Android para dictar el pedido.
 3. El texto reconocido se muestra editable para corregirlo antes de enviarlo.
-4. Al presionar "Enviar pedido" se llama a `POST /api/pedidos` con el token de la mesera. El backend lo emite por Socket.io y aparece en el tablero web al instante.
+4. Al presionar "Enviar pedido" se llama a `POST /api/pedidos` con el token de la mesera. El backend lo emite por Socket.io y aparece en el tablero web al instante, junto con el nombre de quien lo hizo.
 
 ## Manos libres (headset Bluetooth)
 
@@ -15,7 +15,7 @@ App Kotlin (Jetpack Compose) para que las meseras dicten el pedido por voz.
 
 ## Configurar el servidor
 
-La URL del backend es configurable desde la pantalla de login ("Configurar servidor"), se guarda en el dispositivo. Por defecto apunta a `http://10.0.2.2:3000/` (alias del emulador de Android hacia el backend corriendo en la maquina host vía Docker).
+La URL del backend es configurable desde la pantalla de registro ("Configurar servidor"), se guarda en el dispositivo. Por defecto apunta a `http://10.0.2.2:3000/` (alias del emulador de Android hacia el backend corriendo en la maquina host vía Docker).
 
 Para un dispositivo fisico en la misma red que el backend en desarrollo, usar la IP de la maquina (ej. `http://192.168.1.50:3000/`).
 
@@ -40,18 +40,10 @@ Para instalar en un emulador o dispositivo conectado:
 ./gradlew installDebug
 ```
 
-## Crear una mesera de prueba
+Las meseras no necesitan que nadie les cree una cuenta de antemano: se registran ellas mismas la primera vez que abren la app, solo con su nombre.
 
-Con el backend corriendo (ver [../backend/README.md](../backend/README.md)):
-
-```bash
-docker compose exec backend npm run seed
-```
-
-Usuario: `demo` / contrasena: `demo1234`.
-
-En producción ya existe esta misma cuenta demo para pruebas — crear las cuentas reales de las meseras vía `POST /api/auth/register` (requiere el `ADMIN_KEY` configurado en el servidor) y considerar eliminar o cambiar la contrasena de la cuenta demo antes de uso real.
+`POST /api/auth/register` (protegido con `ADMIN_KEY`) y `POST /api/auth/login` (usuario+contrasena) siguen existiendo en el backend para un eventual panel de administracion, pero la app de Android ya no los usa.
 
 ## Estado de las pruebas
 
-Compilado y verificado en el emulador `Pixel_6_API_35` (arranca, la pantalla de login renderiza correctamente con los campos y el boton). El entorno de desarrollo usado para este commit no tenia aceleracion grafica disponible para el emulador, asi que el flujo interactivo completo (login, dictado por voz, manos libres) no se pudo probar de punta a punta ahi — falta validarlo en un emulador con GPU o, mejor, en un dispositivo Android fisico real (recomendado especialmente para el dictado por voz y el headset Bluetooth).
+Compilado y verificado en el emulador `Pixel_6_API_35` (arranca, la pantalla de registro renderiza correctamente con el campo de nombre y el boton). El entorno de desarrollo usado para este commit no tenia aceleracion grafica disponible para el emulador, asi que el flujo interactivo completo (registro, dictado por voz, manos libres) no se pudo probar de punta a punta ahi — falta validarlo en un emulador con GPU o, mejor, en un dispositivo Android fisico real (recomendado especialmente para el dictado por voz y el headset Bluetooth).

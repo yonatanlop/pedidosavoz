@@ -40,15 +40,17 @@ psql "$DATABASE_URL" -f src/db/init.sql
 
 ### Auth
 
-- `POST /api/auth/register` — crea una mesera. Requiere header `x-admin-key: <ADMIN_KEY>`.
+- `POST /api/auth/registro` — **usado por la app Android**. Autoregistro solo con nombre, sin password.
+  Body: `{ "nombre": "Juana Perez" }` → `{ token, mesera }`. El `usuario` se genera automaticamente (slug del nombre + sufijo si ya existe) y el token dura 180 dias.
+- `POST /api/auth/register` — crea una mesera con usuario/password (pensado para un futuro panel de administracion, la app no lo usa). Requiere header `x-admin-key: <ADMIN_KEY>`.
   Body: `{ "nombre": "Juana Perez", "usuario": "juana", "password": "..." }`
-- `POST /api/auth/login` — Body: `{ "usuario": "juana", "password": "..." }` → `{ token, mesera }`
+- `POST /api/auth/login` — usuario/password (idem, no usado por la app). Body: `{ "usuario": "juana", "password": "..." }` → `{ token, mesera }`
 
 ### Pedidos
 
 - `POST /api/pedidos` — crea un pedido (usado por la app Android). Requiere `Authorization: Bearer <token>`.
   Body: `{ "texto_pedido": "una arepa con queso y un cafe con leche" }`
-- `GET /api/pedidos?estado=pendiente&fecha=2026-09-19` — lista pedidos (usado por la pantalla web). Filtros opcionales.
+- `GET /api/pedidos?estado=pendiente&fecha=2026-09-19` — lista pedidos (usado por la pantalla web: tablero con `estado=pendiente`, historial con `estado=listo`). Filtros opcionales.
 - `PATCH /api/pedidos/:id/listo` — marca un pedido como listo (usado por la pantalla de cocina).
 
 ### Tiempo real (Socket.io)
