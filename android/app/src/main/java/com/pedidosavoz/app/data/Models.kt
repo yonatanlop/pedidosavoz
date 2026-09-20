@@ -15,5 +15,6 @@ data class PedidoResponse(
     val fecha: String,
     val hora_creacion: String,
     val turno: String,
-    val numero_turno: Int
+    val numero_turno: Int,
+    val mesera: Mesera
 )

@@ -9,6 +9,15 @@ App Kotlin (Jetpack Compose) para que las meseras dicten el pedido por voz.
 3. El texto reconocido se muestra editable para corregirlo antes de enviarlo.
 4. Al presionar "Enviar pedido" se llama a `POST /api/pedidos` con el token de la mesera. El backend lo emite por Socket.io y aparece en el tablero web al instante, junto con el nombre de quien lo hizo.
 
+## Modo cocina
+
+Desde la pantalla de registro, el enlace "Modo cocina" entra a una pantalla separada pensada para un celular/tablet en la cocina, sin necesidad de registrarse:
+
+- **Microfono en escucha continua** (`VoiceRecognizer` con `continuo = true`): tras cada resultado o error se reinicia solo (con una pausa de 400ms) en vez de detenerse, para que cocina tenga las manos completamente libres.
+- Al reconocer una frase, `CocinaViewModel.extraerNumeroPedido` busca un numero (digito o palabra en espanol: "uno".."treinta") en el texto reconocido, y si hay un pedido pendiente con ese `numero_turno`, lo marca como listo automaticamente (`PATCH /api/pedidos/:id/listo`) — decir "pedido tres listo" o simplemente "tres" funciona igual.
+- La lista de pedidos pendientes se muestra en pantalla (sondeada cada 4 segundos vía `GET /api/pedidos?estado=pendiente`, sin Socket.io en el cliente Android) con un boton "Pedido #N listo" por si el reconocimiento de voz falla o hay mucho ruido — sirve como respaldo tactil y como pantalla de cocina por si misma.
+- "Salir" detiene el microfono y el sondeo, y vuelve a la pantalla de registro.
+
 ## Manos libres (headset Bluetooth)
 
 `SpeechRecognizer` no enruta el audio a un headset Bluetooth conectado automaticamente. `voice/BluetoothScoHelper.kt` activa el modo SCO del `AudioManager` y espera la confirmacion de conexion (con un timeout de 3s como respaldo) antes de empezar a escuchar, para que la mesera pueda dictar el pedido con el manos libres puesto. Si no hay headset conectado, usa el microfono del telefono normalmente.

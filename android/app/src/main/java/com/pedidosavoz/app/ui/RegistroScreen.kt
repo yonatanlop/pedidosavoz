@@ -29,7 +29,8 @@ fun RegistroScreen(
     onServerUrlChange: (String) -> Unit,
     loading: Boolean,
     errorMessage: String?,
-    onRegistrar: (nombre: String) -> Unit
+    onRegistrar: (nombre: String) -> Unit,
+    onModoCocina: () -> Unit
 ) {
     var nombre by remember { mutableStateOf("") }
     var mostrarConfig by remember { mutableStateOf(false) }
@@ -87,6 +88,11 @@ fun RegistroScreen(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
+            }
+
+            Spacer(Modifier.height(32.dp))
+            TextButton(onClick = onModoCocina) {
+                Text("Modo cocina")
             }
         }
     }

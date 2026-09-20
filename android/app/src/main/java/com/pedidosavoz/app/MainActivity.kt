@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
+import com.pedidosavoz.app.ui.CocinaScreen
 import com.pedidosavoz.app.ui.PedidoScreen
 import com.pedidosavoz.app.ui.RegistroScreen
 import com.pedidosavoz.app.ui.theme.PedidosVozTheme
@@ -20,11 +21,13 @@ import com.pedidosavoz.app.voice.VoiceState
 class MainActivity : ComponentActivity() {
 
     private val viewModel: PedidoViewModel by viewModels()
+    private val cocinaViewModel: CocinaViewModel by viewModels()
     private var voiceRecognizer: VoiceRecognizer? = null
+    private var onMicPermissionGranted: (() -> Unit)? = null
 
     private val requestMicPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { granted -> if (granted) iniciarDictado() }
+    ) { granted -> if (granted) onMicPermissionGranted?.invoke() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,8 +35,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             PedidosVozTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    if (viewModel.loggedIn) {
-                        PedidoScreen(
+                    when {
+                        cocinaViewModel.activa -> CocinaScreen(
+                            pendientes = cocinaViewModel.pendientes,
+                            voiceState = cocinaViewModel.voiceState,
+                            mensaje = cocinaViewModel.mensaje,
+                            onMarcarListo = { cocinaViewModel.marcarListo(it) },
+                            onSalir = { salirDeModoCocina() }
+                        )
+
+                        viewModel.loggedIn -> PedidoScreen(
                             meseraNombre = viewModel.meseraNombre,
                             voiceState = viewModel.voiceState,
                             textoPedido = viewModel.textoPedido,
@@ -48,13 +59,14 @@ class MainActivity : ComponentActivity() {
                                 viewModel.cerrarSesion()
                             }
                         )
-                    } else {
-                        RegistroScreen(
+
+                        else -> RegistroScreen(
                             serverUrl = viewModel.serverUrl,
                             onServerUrlChange = { viewModel.actualizarServerUrl(it) },
                             loading = viewModel.registroLoading,
                             errorMessage = viewModel.registroError,
-                            onRegistrar = { nombre -> viewModel.registrarse(nombre) }
+                            onRegistrar = { nombre -> viewModel.registrarse(nombre) },
+                            onModoCocina = { entrarModoCocina() }
                         )
                     }
                 }
@@ -62,17 +74,20 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun solicitarPermisoYDictar() {
+    private fun conPermisoDeMicrofono(accion: () -> Unit) {
         val tienePermiso = ContextCompat.checkSelfPermission(
             this, Manifest.permission.RECORD_AUDIO
         ) == PackageManager.PERMISSION_GRANTED
 
         if (tienePermiso) {
-            iniciarDictado()
+            accion()
         } else {
+            onMicPermissionGranted = accion
             requestMicPermission.launch(Manifest.permission.RECORD_AUDIO)
         }
     }
+
+    private fun solicitarPermisoYDictar() = conPermisoDeMicrofono { iniciarDictado() }
 
     private fun iniciarDictado() {
         voiceRecognizer?.detener()
@@ -83,6 +98,24 @@ class MainActivity : ComponentActivity() {
             }
         }
         voiceRecognizer?.start()
+    }
+
+    private fun entrarModoCocina() = conPermisoDeMicrofono {
+        cocinaViewModel.activar()
+        voiceRecognizer?.detener()
+        voiceRecognizer = VoiceRecognizer(this, continuo = true) { state ->
+            cocinaViewModel.voiceState = state
+            if (state is VoiceState.Result) {
+                cocinaViewModel.procesarFrase(state.texto)
+            }
+        }
+        voiceRecognizer?.start()
+    }
+
+    private fun salirDeModoCocina() {
+        voiceRecognizer?.detener()
+        voiceRecognizer = null
+        cocinaViewModel.desactivar()
     }
 
     override fun onDestroy() {
