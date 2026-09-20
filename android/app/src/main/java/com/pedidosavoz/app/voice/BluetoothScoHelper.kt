@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Handler
 import android.os.Looper
@@ -20,7 +21,15 @@ class BluetoothScoHelper(private val context: Context) {
     private val timeoutHandler = Handler(Looper.getMainLooper())
 
     fun start(onReady: () -> Unit) {
-        if (!audioManager.isBluetoothScoAvailableOffCall) {
+        // isBluetoothScoAvailableOffCall solo dice si el telefono SOPORTA SCO
+        // en general (casi siempre true), no si hay un headset conectado en
+        // este momento. Sin este chequeo, cuando no hay manos libres puesto
+        // igual se esperaban ~3s (el timeout de abajo) antes de escuchar.
+        val hayHeadsetConectado = audioManager
+            .getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+            .any { it.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO }
+
+        if (!hayHeadsetConectado || !audioManager.isBluetoothScoAvailableOffCall) {
             onReady()
             return
         }
