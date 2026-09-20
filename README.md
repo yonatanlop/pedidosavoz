@@ -15,7 +15,7 @@ Sistema de pedidos de desayuno/almuerzo dictados por voz. Una mesera dicta el pe
 2. ✅ Web app del tablero de pedidos
 3. ✅ App Android (login + dictado por voz) — compilada y probada parcialmente, ver [android/README.md](android/README.md#estado-de-las-pruebas)
 4. ⬜ Integración end-to-end en un dispositivo real
-5. 🔄 Despliegue en Oracle Cloud (OCI) — ver [deploy/shared-caddy.md](deploy/shared-caddy.md)
+5. ✅ Desplegado en Oracle Cloud (OCI) — **https://pedidoavoz.duckdns.org/**, ver [deploy/shared-caddy.md](deploy/shared-caddy.md)
 
 ## Levantar todo en local
 

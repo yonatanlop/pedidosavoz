@@ -17,9 +17,11 @@ App Kotlin (Jetpack Compose) para que las meseras dicten el pedido por voz.
 
 La URL del backend es configurable desde la pantalla de login ("Configurar servidor"), se guarda en el dispositivo. Por defecto apunta a `http://10.0.2.2:3000/` (alias del emulador de Android hacia el backend corriendo en la maquina host vía Docker).
 
-Para un dispositivo fisico en la misma red que el backend en desarrollo, usar la IP de la maquina (ej. `http://192.168.1.50:3000/`). En producción, apuntar al dominio/IP de la VM de Oracle Cloud.
+Para un dispositivo fisico en la misma red que el backend en desarrollo, usar la IP de la maquina (ej. `http://192.168.1.50:3000/`).
 
-**Nota de seguridad**: mientras el backend no tenga HTTPS configurado (ver plan de despliegue), el manifest tiene `usesCleartextTraffic="true"` para permitir HTTP plano. Una vez el backend este detras de HTTPS en producción, cambiar esto a `false`.
+**En producción, usar `https://pedidoavoz.duckdns.org/`** (nota la barra final) — el backend esta desplegado en Oracle Cloud detras de HTTPS (ver [../deploy/shared-caddy.md](../deploy/shared-caddy.md)), no en el puerto 3000 directo. Las peticiones `api/...` de la app llegan a `nginx`, que las reenvia al backend internamente, igual que en local.
+
+**Nota de seguridad**: el manifest tiene `usesCleartextTraffic="true"` para permitir HTTP plano solo hacia el backend de desarrollo (`10.0.2.2` o una IP local). El endpoint de producción ya usa HTTPS real.
 
 ## Compilar
 
@@ -47,6 +49,8 @@ docker compose exec backend npm run seed
 ```
 
 Usuario: `demo` / contrasena: `demo1234`.
+
+En producción ya existe esta misma cuenta demo para pruebas — crear las cuentas reales de las meseras vía `POST /api/auth/register` (requiere el `ADMIN_KEY` configurado en el servidor) y considerar eliminar o cambiar la contrasena de la cuenta demo antes de uso real.
 
 ## Estado de las pruebas
 

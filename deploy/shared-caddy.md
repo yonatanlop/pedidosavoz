@@ -1,10 +1,17 @@
 # Integración con el Caddy compartido de otros proyectos
 
-Este servidor ya corre otros proyectos (`gamificacion-fundacion`, `detectoria`)
-cuyo contenedor `caddy` es el único proceso escuchando en los puertos 80/443
-de la IP pública. Solo un proceso puede escuchar en esos puertos, así que
+**Estado actual (2026-09-20)**: desplegado y verificado en
+`149.118.61.207` (Ubuntu 20.04 aarch64), corriendo en
+`/home/ubuntu/pedidosavoz`. Login, creación de pedido y marcar-listo
+probados de punta a punta contra `https://pedidoavoz.duckdns.org/`.
+`detectoria` fue removido del servidor; solo conviven `gamificacion-fundacion`
+y `pedidosavoz`.
+
+Este servidor ya corría otro proyecto (`gamificacion-fundacion`) cuyo
+contenedor `caddy` es el único proceso escuchando en los puertos 80/443 de la
+IP pública. Solo un proceso puede escuchar en esos puertos, así que
 PedidosVoz no puede traer su propio Caddy — tiene que sumarse al que ya
-existe, igual que hizo `detectoria`.
+existe (mismo patrón usado antes para integrar `detectoria`, que ya no está).
 
 **Decisión explícita**: no se modifica el repositorio ni el `docker-compose`
 de `gamificacion-fundacion`. En su lugar, `deploy/patch-shared-caddy.sh` hace
@@ -23,8 +30,7 @@ El `docker-compose.prod.yml` de `gamificacion-fundacion` regenera el
 Caddyfile desde cero (solo con su propio dominio) cada vez que ese contenedor
 arranca. Como no tocamos ese archivo, **si el contenedor `caddy` de ese otro
 proyecto se recrea** (un redeploy de `gamificacion-fundacion`, un reinicio de
-la VM, etc.), el bloque de PedidosVoz (y el de `detectoria`) se pierde y hay
-que volver a correr:
+la VM, etc.), el bloque de PedidosVoz se pierde y hay que volver a correr:
 
 ```bash
 ./deploy/patch-shared-caddy.sh
@@ -48,5 +54,4 @@ docker compose -f docker-compose.yml -f docker-compose.deploy.yml up -d --build
 ```
 
 Verificar: `https://pedidoavoz.duckdns.org/` y que
-`https://gamificaciones.duckdns.org/` y `https://detectoria.duckdns.org/`
-sigan funcionando igual que antes.
+`https://gamificaciones.duckdns.org/` siga funcionando igual que antes.
