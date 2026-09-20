@@ -5,11 +5,13 @@ API REST + Socket.io para el sistema de pedidos por voz.
 ## Correr en local con Docker
 
 ```bash
-cp backend/.env.example backend/.env
-# edita backend/.env con tus valores (JWT_SECRET, ADMIN_KEY, etc.)
+cp .env.example .env                  # credenciales de Postgres (raiz del repo)
+cp backend/.env.example backend/.env  # JWT_SECRET, ADMIN_KEY, etc.
 
 docker compose up --build
 ```
+
+**Importante**: `DB_NAME`/`DB_USER`/`DB_PASSWORD` de `backend/.env` se ignoran al correr con `docker-compose.yml` — `docker-compose.yml` los inyecta el mismo desde el `.env` de la raiz para que backend y Postgres siempre usen las mismas credenciales. Si cambias la contraseña, hazlo en el `.env` de la raiz.
 
 Esto levanta PostgreSQL (con el esquema de `src/db/init.sql` ya aplicado) y el backend en `http://localhost:3000`.
 

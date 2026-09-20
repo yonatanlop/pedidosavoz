@@ -1,0 +1,26 @@
+# Overlay para desplegar en un servidor donde 80/443 ya estan ocupados por el
+# Caddy de otro proyecto (ver deploy/shared-caddy.md).
+#
+#   docker compose -f docker-compose.yml -f docker-compose.deploy.yml up -d --build
+#
+# "web" deja de publicar su puerto al host: se conecta a la red externa
+# compartida "edge" para que ese Caddy lo alcance por nombre de contenedor.
+# "postgres" tampoco publica su puerto (no hace falta fuera de la red interna
+# del proyecto).
+#
+# Requiere que exista la red externa: docker network create edge
+
+services:
+  postgres:
+    ports: !reset []
+
+  web:
+    container_name: pedidosavoz-web
+    ports: !reset []
+    networks:
+      - default
+      - edge
+
+networks:
+  edge:
+    external: true

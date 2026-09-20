@@ -24,6 +24,10 @@ services:
       - ./backend/.env
     environment:
       DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-pedidosavoz}
+      DB_USER: ${DB_USER:-pedidosavoz}
+      DB_PASSWORD: ${DB_PASSWORD:-changeme}
     depends_on:
       postgres:
         condition: service_healthy
