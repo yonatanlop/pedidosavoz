@@ -5,13 +5,18 @@
 #
 # "web" deja de publicar su puerto al host: se conecta a la red externa
 # compartida "edge" para que ese Caddy lo alcance por nombre de contenedor.
-# "postgres" tampoco publica su puerto (no hace falta fuera de la red interna
-# del proyecto).
+# "postgres" y "backend" tampoco publican su puerto: el propio nginx de "web"
+# ya hace de proxy hacia el backend para /api y /socket.io (igual que en
+# local), asi que todo el trafico externo entra por Caddy -> web -> backend,
+# sin exponer el backend en HTTP plano directamente a internet.
 #
 # Requiere que exista la red externa: docker network create edge
 
 services:
   postgres:
+    ports: !reset []
+
+  backend:
     ports: !reset []
 
   web:
