@@ -58,7 +58,7 @@ class PedidoViewModel(application: Application) : AndroidViewModel(application) 
                     registroError = "No se pudo registrar, intenta de nuevo"
                 }
             } catch (e: Exception) {
-                registroError = "No se pudo conectar al servidor"
+                registroError = "No se pudo conectar: ${e.message ?: e::class.simpleName}"
             } finally {
                 registroLoading = false
             }
@@ -84,7 +84,7 @@ class PedidoViewModel(application: Application) : AndroidViewModel(application) 
                     mensaje = "No se pudo enviar el pedido (${response.code()})"
                 }
             } catch (e: Exception) {
-                mensaje = "No se pudo enviar el pedido: sin conexion"
+                mensaje = "No se pudo enviar el pedido: ${e.message ?: e::class.simpleName}"
             } finally {
                 enviando = false
             }

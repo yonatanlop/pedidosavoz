@@ -43,7 +43,9 @@ class SessionManager(context: Context) {
         private const val KEY_TOKEN = "token"
         private const val KEY_MESERA_NOMBRE = "mesera_nombre"
 
-        // 10.0.2.2 es el alias del emulador de Android hacia el localhost de la maquina host.
-        const val DEFAULT_SERVER_URL = "http://10.0.2.2:3000/"
+        // Servidor de produccion. Para desarrollo contra un backend local en el
+        // emulador, cambiar temporalmente a "http://10.0.2.2:3000/" (alias del
+        // emulador hacia el localhost de la maquina host).
+        const val DEFAULT_SERVER_URL = "https://pedidoavoz.duckdns.org/"
     }
 }

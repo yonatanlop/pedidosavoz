@@ -12,7 +12,13 @@ object ApiClient {
         .build()
 
     fun create(baseUrl: String): ApiService {
-        val normalizada = if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/"
+        var normalizada = baseUrl.trim()
+        if (!normalizada.startsWith("http://") && !normalizada.startsWith("https://")) {
+            normalizada = "https://$normalizada"
+        }
+        if (!normalizada.endsWith("/")) {
+            normalizada = "$normalizada/"
+        }
         return Retrofit.Builder()
             .baseUrl(normalizada)
             .client(client)
