@@ -29,18 +29,11 @@ Antes de enviar un pedido, la app de la mesera (`PedidoViewModel.enviarPedido`) 
 
 Los platos agotados son por dia — al dia siguiente dejan de aplicar solos, sin que nadie tenga que "reponerlos".
 
-## Voz (ElevenLabs)
+## Voz (texto a voz nativo de Android)
 
-La voz del aviso de agotado usa la [API de ElevenLabs](https://elevenlabs.io) (modelo `eleven_flash_v2_5`, mismo patron que el proyecto `AsistentePersonal`), con una voz **"premade"** (las unicas garantizadas en el plan gratis — por defecto "Sarah", `EXAVITQu4vr4xnSDxMaL`).
+El aviso de agotado se dice con `android.speech.tts.TextToSpeech`, el motor nativo de Android, en `Locale("es", "CO")` (con fallback a `Locale("es")` si el telefono no tiene esa variante instalada).
 
-Configuracion en `android/local.properties` (ver `local.properties.example`, nunca se commitea):
-
-```properties
-ELEVENLABS_API_KEY=tu-api-key
-ELEVENLABS_VOICE_ID=EXAVITQu4vr4xnSDxMaL
-```
-
-Si se deja `ELEVENLABS_API_KEY` vacio, `Anunciador.decir()` simplemente no hace nada — el aviso en pantalla (dialogo + texto) sigue funcionando igual, la voz es un plus opcional.
+Se probo primero ElevenLabs (mismo servicio que el proyecto `AsistentePersonal`), pero resulto que **ninguna voz en espanol es realmente gratis por API**: las voces "premade" garantizadas en el plan gratis son todas en ingles (acento americano/britanico/australiano — sonaban "gringas" leyendo espanol), y las voces en espanol de su biblioteca compartida (incluida una colombiana, "Anie") devuelven `402 Payment Required` al usarlas via API sin plan pago o sin comprar creditos. Por eso se cambio al motor nativo: gratis, funciona offline, y usa la voz en espanol que ya tenga instalada el telefono (la mayoria de equipos Android la traen o la descargan solos la primera vez que hace falta).
 
 ## Manos libres (headset Bluetooth)
 

@@ -149,4 +149,9 @@ class PedidoViewModel(application: Application) : AndroidViewModel(application) 
         mensaje = null
         advertenciaAgotado = null
     }
+
+    override fun onCleared() {
+        anunciador.apagar()
+        super.onCleared()
+    }
 }
