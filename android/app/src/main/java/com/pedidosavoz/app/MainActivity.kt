@@ -59,7 +59,6 @@ class MainActivity : ComponentActivity() {
                                 voiceRecognizer?.detener()
                                 viewModel.cerrarSesion()
                             },
-                            onConfirmarEnvioPeseAAgotado = { viewModel.confirmarEnvioPeseAAgotado() },
                             onDescartarAdvertenciaAgotado = { viewModel.descartarAdvertenciaAgotado() }
                         )
 

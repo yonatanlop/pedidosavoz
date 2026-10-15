@@ -43,7 +43,6 @@ fun PedidoScreen(
     onEnviar: () -> Unit,
     onDescartar: () -> Unit,
     onCerrarSesion: () -> Unit,
-    onConfirmarEnvioPeseAAgotado: () -> Unit,
     onDescartarAdvertenciaAgotado: () -> Unit
 ) {
     Scaffold(
@@ -119,15 +118,10 @@ fun PedidoScreen(
         AlertDialog(
             onDismissRequest = onDescartarAdvertenciaAgotado,
             title = { Text("Ya no hay $advertenciaAgotado") },
-            text = { Text("Cocina avisó que se acabó. ¿Editas el pedido o lo envías igual?") },
+            text = { Text("Cocina avisó que se acabó. Corrige el pedido antes de enviarlo.") },
             confirmButton = {
-                Button(onClick = onConfirmarEnvioPeseAAgotado) {
-                    Text("Enviar igual")
-                }
-            },
-            dismissButton = {
-                OutlinedButton(onClick = onDescartarAdvertenciaAgotado) {
-                    Text("Editar")
+                Button(onClick = onDescartarAdvertenciaAgotado) {
+                    Text("Editar pedido")
                 }
             }
         )

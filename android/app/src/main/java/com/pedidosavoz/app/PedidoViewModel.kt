@@ -89,25 +89,13 @@ class PedidoViewModel(application: Application) : AndroidViewModel(application) 
 
             if (coincidencia != null) {
                 advertenciaAgotado = coincidencia.nombre_plato
-                anunciador.decir("Ya no hay ${coincidencia.nombre_plato}")
+                anunciador.decir("$meseraNombre, ya no hay ${coincidencia.nombre_plato}")
                 enviando = false
                 return@launch
             }
 
             enviarAhora(texto)
         }
-    }
-
-    fun confirmarEnvioPeseAAgotado() {
-        val texto = textoPedido.trim()
-        if (texto.isEmpty()) {
-            advertenciaAgotado = null
-            return
-        }
-        advertenciaAgotado = null
-        enviando = true
-        mensaje = null
-        viewModelScope.launch { enviarAhora(texto) }
     }
 
     fun descartarAdvertenciaAgotado() {
