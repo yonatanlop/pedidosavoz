@@ -6,10 +6,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.pedidosavoz.app.data.AgotadoRequest
 import com.pedidosavoz.app.data.ApiClient
 import com.pedidosavoz.app.data.PedidoResponse
 import com.pedidosavoz.app.data.SessionManager
 import com.pedidosavoz.app.voice.VoiceState
+import com.pedidosavoz.app.voice.normalizarTexto
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -60,6 +62,18 @@ class CocinaViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun procesarFrase(texto: String) {
+        val normalizado = normalizarTexto(texto)
+        val trigger = TRIGGERS_AGOTADO.firstOrNull { normalizado.contains(it) }
+        if (trigger != null) {
+            val plato = normalizado.substringAfter(trigger).trim()
+            if (plato.isBlank()) {
+                mensaje = "Dime que plato se acabo, por ejemplo \"se acabo la sopa\""
+            } else {
+                marcarAgotado(plato)
+            }
+            return
+        }
+
         val numero = extraerNumeroPedido(texto)
         if (numero == null) {
             mensaje = "No entendi un numero de pedido: \"$texto\""
@@ -71,6 +85,22 @@ class CocinaViewModel(application: Application) : AndroidViewModel(application) 
             return
         }
         marcarListo(pedido)
+    }
+
+    private fun marcarAgotado(nombrePlato: String) {
+        viewModelScope.launch {
+            try {
+                val api = ApiClient.create(session.serverUrl)
+                val response = api.marcarAgotado(AgotadoRequest(nombrePlato))
+                if (response.isSuccessful) {
+                    mensaje = "Marcado como agotado: $nombrePlato"
+                } else {
+                    mensaje = "No se pudo marcar agotado \"$nombrePlato\" (${response.code()})"
+                }
+            } catch (e: Exception) {
+                mensaje = "No se pudo marcar agotado: ${e.message ?: e::class.simpleName}"
+            }
+        }
     }
 
     fun marcarListo(pedido: PedidoResponse) {
@@ -91,6 +121,8 @@ class CocinaViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     companion object {
+        private val TRIGGERS_AGOTADO = listOf("se acabo", "se termino", "ya no hay")
+
         private val NUMEROS_TEXTO = mapOf(
             "cero" to 0, "un" to 1, "uno" to 1, "una" to 1, "dos" to 2, "tres" to 3, "cuatro" to 4,
             "cinco" to 5, "seis" to 6, "siete" to 7, "ocho" to 8, "nueve" to 9, "diez" to 10,
@@ -102,8 +134,7 @@ class CocinaViewModel(application: Application) : AndroidViewModel(application) 
         )
 
         fun extraerNumeroPedido(texto: String): Int? {
-            val normalizado = texto.lowercase()
-                .replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u")
+            val normalizado = normalizarTexto(texto)
 
             Regex("\\d+").find(normalizado)?.let { return it.value.toIntOrNull() }
 

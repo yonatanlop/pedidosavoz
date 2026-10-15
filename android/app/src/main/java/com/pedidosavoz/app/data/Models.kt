@@ -18,3 +18,7 @@ data class PedidoResponse(
     val numero_turno: Int,
     val mesera: Mesera
 )
+
+data class AgotadoRequest(val nombre_plato: String)
+
+data class AgotadoResponse(val id: Int, val nombre_plato: String, val fecha: String, val creado_en: String)

@@ -18,6 +18,30 @@ Desde la pantalla de registro, el enlace "Modo cocina" entra a una pantalla sepa
 - La lista de pedidos pendientes se muestra en pantalla (sondeada cada 4 segundos vía `GET /api/pedidos?estado=pendiente`, sin Socket.io en el cliente Android) con un boton "Pedido #N listo" por si el reconocimiento de voz falla o hay mucho ruido — sirve como respaldo tactil y como pantalla de cocina por si misma.
 - "Salir" detiene el microfono y el sondeo, y vuelve a la pantalla de registro.
 
+## Aviso de plato agotado
+
+Cuando cocina dice **"se acabó X"**, **"se terminó X"** o **"ya no hay X"** en Modo cocina, `CocinaViewModel` detecta la frase disparadora, toma lo que sigue como nombre del plato y llama a `POST /api/agotados` (en vez de interpretarlo como "pedido # listo").
+
+Antes de enviar un pedido, la app de la mesera (`PedidoViewModel.enviarPedido`) consulta `GET /api/agotados` y compara el texto dictado contra cada plato agotado del dia (`voice/TextoUtil.kt`: coincide si el 60% o más de las palabras significativas del nombre del plato aparecen en el pedido). Si hay coincidencia:
+
+- Se **anuncia por voz** ("Ya no hay [plato]") usando `voice/Anunciador.kt` (ElevenLabs, ver abajo).
+- Se muestra un dialogo con las opciones **"Editar"** (vuelve al texto para corregirlo) o **"Enviar igual"** (lo manda de todas formas, por si la mesera confirma con el cliente que esta bien).
+
+Los platos agotados son por dia — al dia siguiente dejan de aplicar solos, sin que nadie tenga que "reponerlos".
+
+## Voz (ElevenLabs)
+
+La voz del aviso de agotado usa la [API de ElevenLabs](https://elevenlabs.io) (modelo `eleven_flash_v2_5`, mismo patron que el proyecto `AsistentePersonal`), con una voz **"premade"** (las unicas garantizadas en el plan gratis — por defecto "Sarah", `EXAVITQu4vr4xnSDxMaL`).
+
+Configuracion en `android/local.properties` (ver `local.properties.example`, nunca se commitea):
+
+```properties
+ELEVENLABS_API_KEY=tu-api-key
+ELEVENLABS_VOICE_ID=EXAVITQu4vr4xnSDxMaL
+```
+
+Si se deja `ELEVENLABS_API_KEY` vacio, `Anunciador.decir()` simplemente no hace nada — el aviso en pantalla (dialogo + texto) sigue funcionando igual, la voz es un plus opcional.
+
 ## Manos libres (headset Bluetooth)
 
 `SpeechRecognizer` no enruta el audio a un headset Bluetooth conectado automaticamente. `voice/BluetoothScoHelper.kt` activa el modo SCO del `AudioManager` y espera la confirmacion de conexion (con un timeout de 3s como respaldo) antes de empezar a escuchar, para que la mesera pueda dictar el pedido con el manos libres puesto. Si no hay headset conectado, usa el microfono del telefono normalmente.

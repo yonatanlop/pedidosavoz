@@ -1,6 +1,14 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+}
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) load(FileInputStream(file))
 }
 
 android {
@@ -13,6 +21,19 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        // Voz (ElevenLabs, voz "premade" gratis) para que la app de la mesera
+        // anuncie cuando cocina marca un plato como agotado. Ver README.
+        buildConfigField(
+            "String",
+            "ELEVENLABS_API_KEY",
+            "\"${localProperties.getProperty("ELEVENLABS_API_KEY", "")}\""
+        )
+        buildConfigField(
+            "String",
+            "ELEVENLABS_VOICE_ID",
+            "\"${localProperties.getProperty("ELEVENLABS_VOICE_ID", "EXAVITQu4vr4xnSDxMaL")}\""
+        )
     }
 
     buildTypes {
@@ -33,6 +54,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {

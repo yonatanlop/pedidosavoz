@@ -10,12 +10,15 @@ import com.pedidosavoz.app.data.ApiClient
 import com.pedidosavoz.app.data.PedidoRequest
 import com.pedidosavoz.app.data.RegistroRequest
 import com.pedidosavoz.app.data.SessionManager
+import com.pedidosavoz.app.voice.Anunciador
 import com.pedidosavoz.app.voice.VoiceState
+import com.pedidosavoz.app.voice.pedidoMencionaPlato
 import kotlinx.coroutines.launch
 
 class PedidoViewModel(application: Application) : AndroidViewModel(application) {
 
     val session = SessionManager(application)
+    private val anunciador = Anunciador(application)
 
     var loggedIn by mutableStateOf(session.isLoggedIn())
         private set
@@ -33,6 +36,8 @@ class PedidoViewModel(application: Application) : AndroidViewModel(application) 
     var enviando by mutableStateOf(false)
         private set
     var mensaje by mutableStateOf<String?>(null)
+    var advertenciaAgotado by mutableStateOf<String?>(null)
+        private set
 
     fun actualizarServerUrl(url: String) {
         serverUrl = url
@@ -66,29 +71,66 @@ class PedidoViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun enviarPedido() {
-        val token = session.token ?: return
         val texto = textoPedido.trim()
-        if (texto.isEmpty()) return
+        if (texto.isEmpty() || session.token == null) return
 
         enviando = true
         mensaje = null
+        advertenciaAgotado = null
         viewModelScope.launch {
-            try {
-                val api = ApiClient.create(session.serverUrl)
-                val response = api.crearPedido("Bearer $token", PedidoRequest(texto))
-                val body = response.body()
-                if (response.isSuccessful && body != null) {
-                    mensaje = "Pedido #${body.numero_turno} enviado"
-                    textoPedido = ""
-                    voiceState = VoiceState.Idle
-                } else {
-                    mensaje = "No se pudo enviar el pedido (${response.code()})"
-                }
-            } catch (e: Exception) {
-                mensaje = "No se pudo enviar el pedido: ${e.message ?: e::class.simpleName}"
-            } finally {
+            val api = ApiClient.create(session.serverUrl)
+
+            // Si falla consultar agotados (ej. sin conexion momentanea), no bloqueamos
+            // el envio del pedido por un chequeo secundario: se trata como "sin coincidencia".
+            val coincidencia = runCatching { api.listarAgotados().body() }
+                .getOrNull()
+                .orEmpty()
+                .firstOrNull { pedidoMencionaPlato(texto, it.nombre_plato) }
+
+            if (coincidencia != null) {
+                advertenciaAgotado = coincidencia.nombre_plato
+                anunciador.decir("Ya no hay ${coincidencia.nombre_plato}")
                 enviando = false
+                return@launch
             }
+
+            enviarAhora(texto)
+        }
+    }
+
+    fun confirmarEnvioPeseAAgotado() {
+        val texto = textoPedido.trim()
+        if (texto.isEmpty()) {
+            advertenciaAgotado = null
+            return
+        }
+        advertenciaAgotado = null
+        enviando = true
+        mensaje = null
+        viewModelScope.launch { enviarAhora(texto) }
+    }
+
+    fun descartarAdvertenciaAgotado() {
+        advertenciaAgotado = null
+    }
+
+    private suspend fun enviarAhora(texto: String) {
+        val token = session.token ?: return
+        try {
+            val api = ApiClient.create(session.serverUrl)
+            val response = api.crearPedido("Bearer $token", PedidoRequest(texto))
+            val body = response.body()
+            if (response.isSuccessful && body != null) {
+                mensaje = "Pedido #${body.numero_turno} enviado"
+                textoPedido = ""
+                voiceState = VoiceState.Idle
+            } else {
+                mensaje = "No se pudo enviar el pedido (${response.code()})"
+            }
+        } catch (e: Exception) {
+            mensaje = "No se pudo enviar el pedido: ${e.message ?: e::class.simpleName}"
+        } finally {
+            enviando = false
         }
     }
 
@@ -96,6 +138,7 @@ class PedidoViewModel(application: Application) : AndroidViewModel(application) 
         textoPedido = ""
         voiceState = VoiceState.Idle
         mensaje = null
+        advertenciaAgotado = null
     }
 
     fun cerrarSesion() {
@@ -104,5 +147,6 @@ class PedidoViewModel(application: Application) : AndroidViewModel(application) 
         textoPedido = ""
         voiceState = VoiceState.Idle
         mensaje = null
+        advertenciaAgotado = null
     }
 }

@@ -16,3 +16,12 @@ BEGIN
 END $$;
 
 CREATE INDEX IF NOT EXISTS idx_pedidos_fecha_turno ON pedidos(fecha, turno);
+
+CREATE TABLE IF NOT EXISTS agotados (
+  id SERIAL PRIMARY KEY,
+  nombre_plato TEXT NOT NULL,
+  fecha DATE NOT NULL DEFAULT CURRENT_DATE,
+  creado_en TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_agotados_fecha ON agotados(fecha);

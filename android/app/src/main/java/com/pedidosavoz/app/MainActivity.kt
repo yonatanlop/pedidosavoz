@@ -51,13 +51,16 @@ class MainActivity : ComponentActivity() {
                             onTextoPedidoChange = { viewModel.textoPedido = it },
                             enviando = viewModel.enviando,
                             mensaje = viewModel.mensaje,
+                            advertenciaAgotado = viewModel.advertenciaAgotado,
                             onDictar = { solicitarPermisoYDictar() },
                             onEnviar = { viewModel.enviarPedido() },
                             onDescartar = { viewModel.descartarPedido() },
                             onCerrarSesion = {
                                 voiceRecognizer?.detener()
                                 viewModel.cerrarSesion()
-                            }
+                            },
+                            onConfirmarEnvioPeseAAgotado = { viewModel.confirmarEnvioPeseAAgotado() },
+                            onDescartarAdvertenciaAgotado = { viewModel.descartarAdvertenciaAgotado() }
                         )
 
                         else -> RegistroScreen(

@@ -4,6 +4,7 @@ const morgan = require('morgan');
 
 const authRoutes = require('./routes/authRoutes');
 const pedidosRouter = require('./routes/pedidosRoutes');
+const agotadosRouter = require('./routes/agotadosRoutes');
 
 function createApp(io) {
   const app = express();
@@ -16,6 +17,7 @@ function createApp(io) {
 
   app.use('/api/auth', authRoutes);
   app.use('/api/pedidos', pedidosRouter(io));
+  app.use('/api/agotados', agotadosRouter(io));
 
   app.use((req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));
 

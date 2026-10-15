@@ -24,4 +24,10 @@ interface ApiService {
 
     @PATCH("api/pedidos/{id}/listo")
     suspend fun marcarListo(@Path("id") id: Int): Response<PedidoResponse>
+
+    @POST("api/agotados")
+    suspend fun marcarAgotado(@Body request: AgotadoRequest): Response<AgotadoResponse>
+
+    @GET("api/agotados")
+    suspend fun listarAgotados(): Response<List<AgotadoResponse>>
 }

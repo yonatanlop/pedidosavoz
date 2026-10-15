@@ -24,3 +24,15 @@ CREATE TABLE IF NOT EXISTS pedidos (
 CREATE INDEX IF NOT EXISTS idx_pedidos_estado ON pedidos(estado);
 CREATE INDEX IF NOT EXISTS idx_pedidos_fecha ON pedidos(fecha);
 CREATE INDEX IF NOT EXISTS idx_pedidos_fecha_turno ON pedidos(fecha, turno);
+
+-- Platos que cocina marca como agotados por voz ("se acabo la sopa"). Se
+-- consideran vigentes solo para la fecha en que se registraron (se filtran
+-- por fecha = CURRENT_DATE al consultar) — al dia siguiente dejan de aplicar.
+CREATE TABLE IF NOT EXISTS agotados (
+  id SERIAL PRIMARY KEY,
+  nombre_plato TEXT NOT NULL,
+  fecha DATE NOT NULL DEFAULT CURRENT_DATE,
+  creado_en TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_agotados_fecha ON agotados(fecha);

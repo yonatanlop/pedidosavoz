@@ -61,10 +61,17 @@ psql "$DATABASE_URL" -f src/db/init.sql
 - `GET /api/pedidos?estado=pendiente&fecha=2026-09-19` — lista pedidos (usado por la pantalla web: tablero con `estado=pendiente`, historial con `estado=listo`). Filtros opcionales.
 - `PATCH /api/pedidos/:id/listo` — marca un pedido como listo (usado por la pantalla de cocina). Guarda `listo_en` con la fecha/hora local de despacho.
 
+### Platos agotados
+
+- `POST /api/agotados` — usado por el Modo cocina de la app Android (voz: "se acabo X" / "se termino X" / "ya no hay X"). Sin auth, igual que `marcarListo`.
+  Body: `{ "nombre_plato": "sopa de arroz" }`.
+- `GET /api/agotados?fecha=2026-10-15` — lista los platos marcados agotados en esa fecha (por defecto hoy). Usado por la app de la mesera antes de enviar un pedido. Los registros son por dia: al dia siguiente ya no aparecen (no hace falta "reponerlos" manualmente).
+
 ### Tiempo real (Socket.io)
 
 - Evento `pedido:nuevo` — se emite al crear un pedido, con el pedido completo.
 - Evento `pedido:listo` — se emite al marcar un pedido listo, con `{ id }`.
+- Evento `agotado:nuevo` — se emite al marcar un plato agotado, con el registro completo.
 
 ## Variables de entorno
 

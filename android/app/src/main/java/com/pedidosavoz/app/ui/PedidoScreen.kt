@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
@@ -37,10 +38,13 @@ fun PedidoScreen(
     onTextoPedidoChange: (String) -> Unit,
     enviando: Boolean,
     mensaje: String?,
+    advertenciaAgotado: String?,
     onDictar: () -> Unit,
     onEnviar: () -> Unit,
     onDescartar: () -> Unit,
-    onCerrarSesion: () -> Unit
+    onCerrarSesion: () -> Unit,
+    onConfirmarEnvioPeseAAgotado: () -> Unit,
+    onDescartarAdvertenciaAgotado: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -109,5 +113,23 @@ fun PedidoScreen(
                 Text(mensaje)
             }
         }
+    }
+
+    if (advertenciaAgotado != null) {
+        AlertDialog(
+            onDismissRequest = onDescartarAdvertenciaAgotado,
+            title = { Text("Ya no hay $advertenciaAgotado") },
+            text = { Text("Cocina avisó que se acabó. ¿Editas el pedido o lo envías igual?") },
+            confirmButton = {
+                Button(onClick = onConfirmarEnvioPeseAAgotado) {
+                    Text("Enviar igual")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = onDescartarAdvertenciaAgotado) {
+                    Text("Editar")
+                }
+            }
+        )
     }
 }

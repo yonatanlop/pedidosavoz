@@ -1,0 +1,14 @@
+# Copia este archivo a "local.properties" (ya esta en .gitignore) y completa
+# tus valores reales. Android Studio tambien agrega aqui "sdk.dir=..." solo.
+
+sdk.dir=
+
+# API key de ElevenLabs (https://elevenlabs.io/app/settings/api-keys), para
+# que la app de la mesera anuncie por voz cuando cocina marca un plato como
+# agotado. Si se deja vacio, la app simplemente no anuncia nada por voz (el
+# aviso en pantalla sigue funcionando igual).
+ELEVENLABS_API_KEY=
+
+# Voice ID de una voz "premade" (las unicas garantizadas en el plan gratis de
+# ElevenLabs). Por defecto usa "Sarah" si se deja vacio.
+ELEVENLABS_VOICE_ID=EXAVITQu4vr4xnSDxMaL
