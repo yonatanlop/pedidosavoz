@@ -109,7 +109,7 @@ class PedidoViewModel(application: Application) : AndroidViewModel(application) 
             val response = api.crearPedido("Bearer $token", PedidoRequest(texto))
             val body = response.body()
             if (response.isSuccessful && body != null) {
-                mensaje = "Pedido #${body.numero_turno} enviado"
+                mensaje = if (body.apartado) "Apartado #${body.numero_apartado} enviado" else "Pedido #${body.numero_turno} enviado"
                 textoPedido = ""
                 voiceState = VoiceState.Idle
             } else {

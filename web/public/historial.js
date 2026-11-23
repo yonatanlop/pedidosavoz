@@ -32,7 +32,7 @@
     card.dataset.id = pedido.id;
     card.innerHTML = `
       <div class="card-header">
-        <span class="numero">${tituloTurno(pedido.turno)} #${pedido.numero_turno}</span>
+        <span class="numero">${pedido.apartado ? 'Apartado #' + pedido.numero_apartado : tituloTurno(pedido.turno) + ' #' + pedido.numero_turno}</span>
         <span class="hora">${formatHora(pedido.hora_creacion)} → ${formatHora(pedido.listo_en ? pedido.listo_en.slice(11) : '')}</span>
       </div>
       <div class="card-mesera">${escapeHtml(pedido.mesera.nombre)}</div>

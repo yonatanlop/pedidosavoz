@@ -6,20 +6,31 @@
   <title>PedidosVoz - Tablero de cocina</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
+<body class="tablero">
   <header class="topbar">
-    <h1>Pedidos pendientes</h1>
+    <h1>Pedidos pendientes <span id="contador" class="contador">0</span></h1>
     <div class="topbar-right">
+      <button id="btn-sonido" class="btn-sonido" type="button">🔔 Activar avisos</button>
       <a class="nav-link" href="historial.html">Historial</a>
       <span id="conn-status" class="status">Conectando...</span>
       <span id="reloj" class="reloj"></span>
     </div>
   </header>
 
-  <main>
-    <p id="empty" class="empty" hidden>No hay pedidos pendientes 🎉</p>
-    <div id="grid" class="grid"></div>
-  </main>
+  <div id="alerta-apartados" class="alerta-apartados" hidden></div>
+
+  <div class="layout">
+    <main class="col-pendientes">
+      <p id="empty" class="empty" hidden>No hay pedidos pendientes 🎉</p>
+      <div id="grid" class="grid"></div>
+    </main>
+
+    <aside class="col-apartados" aria-label="Apartados">
+      <h2>Apartados <span id="contador-apartados" class="contador contador-apartados">0</span></h2>
+      <p id="empty-apartados" class="empty empty-chico" hidden>No hay apartados</p>
+      <div id="apartados" class="lista-apartados"></div>
+    </aside>
+  </div>
 
   <script src="vendor/socket.io.min.js"></script>
   <script src="app.js"></script>

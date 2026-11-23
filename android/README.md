@@ -18,6 +18,11 @@ Desde la pantalla de registro, el enlace "Modo cocina" entra a una pantalla sepa
 - La lista de pedidos pendientes se muestra en pantalla (sondeada cada 4 segundos vía `GET /api/pedidos?estado=pendiente`, sin Socket.io en el cliente Android) con un boton "Pedido #N listo" por si el reconocimiento de voz falla o hay mucho ruido — sirve como respaldo tactil y como pantalla de cocina por si misma.
 - "Salir" detiene el microfono y el sondeo, y vuelve a la pantalla de registro.
 
+## Apartados
+
+- **Mesera**: si dicta "apartado de arroz, carne de cerdo, arveja, platano y ensalada", el backend lo reconoce por la palabra inicial y lo guarda como apartado (la app muestra "Apartado #N enviado").
+- **Cocina**: la lista muestra los apartados aparte (`GET /api/pedidos?estado=pendiente&apartado=true`) y la lista normal solo trae `apartado=false`. Decir **"apartado 3 listo"** marca ese apartado como listo. Cada 10 minutos, si hay apartados sin atender, `CocinaViewModel` lo recuerda por voz (`Anunciador`).
+
 ## Aviso de plato agotado
 
 Cuando cocina dice **"se acabó X"**, **"se terminó X"** o **"ya no hay X"** en Modo cocina, `CocinaViewModel` detecta la frase disparadora, toma lo que sigue como nombre del plato y llama a `POST /api/agotados` (en vez de interpretarlo como "pedido # listo").

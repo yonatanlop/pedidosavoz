@@ -30,6 +30,7 @@ import com.pedidosavoz.app.voice.VoiceState
 @Composable
 fun CocinaScreen(
     pendientes: List<PedidoResponse>,
+    apartados: List<PedidoResponse>,
     voiceState: VoiceState,
     mensaje: String?,
     onMarcarListo: (PedidoResponse) -> Unit,
@@ -52,7 +53,7 @@ fun CocinaScreen(
                 .padding(16.dp)
         ) {
             val estadoTexto = when (voiceState) {
-                is VoiceState.Listening -> "Escuchando... di \"pedido [numero] listo\""
+                is VoiceState.Listening -> "Escuchando... di \"pedido [numero] listo\" o \"apartado [numero] listo\""
                 is VoiceState.Error -> voiceState.mensaje
                 else -> "Preparando el microfono..."
             }
@@ -65,12 +66,27 @@ fun CocinaScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            if (pendientes.isEmpty()) {
+            if (pendientes.isEmpty() && apartados.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text("No hay pedidos pendientes", style = MaterialTheme.typography.bodyLarge)
                 }
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    if (apartados.isNotEmpty()) {
+                        item(key = "titulo-apartados") {
+                            Text(
+                                "Apartados (${apartados.size})",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.tertiary
+                            )
+                        }
+                        items(apartados, key = { it.id }) { apartado ->
+                            TarjetaApartadoCocina(apartado, onMarcarListo)
+                        }
+                        item(key = "titulo-pendientes") {
+                            Text("Pedidos pendientes (${pendientes.size})", style = MaterialTheme.typography.titleLarge)
+                        }
+                    }
                     items(pendientes, key = { it.id }) { pedido ->
                         TarjetaPedidoCocina(pedido, onMarcarListo)
                     }
@@ -101,6 +117,31 @@ private fun TarjetaPedidoCocina(pedido: PedidoResponse, onMarcarListo: (PedidoRe
             Spacer(Modifier.height(12.dp))
             Button(onClick = { onMarcarListo(pedido) }, modifier = Modifier.fillMaxWidth()) {
                 Text("Pedido #${pedido.numero_turno} listo")
+            }
+        }
+    }
+}
+
+@Composable
+private fun TarjetaApartadoCocina(pedido: PedidoResponse, onMarcarListo: (PedidoResponse) -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Apartado #${pedido.numero_apartado}", style = MaterialTheme.typography.titleMedium)
+                Text(pedido.hora_para ?: "Sin hora", color = MaterialTheme.colorScheme.tertiary)
+            }
+            if (pedido.cliente_nombre != null) {
+                Spacer(Modifier.height(4.dp))
+                Text(pedido.cliente_nombre, style = MaterialTheme.typography.bodySmall)
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(pedido.texto_pedido, style = MaterialTheme.typography.bodyLarge)
+            Spacer(Modifier.height(12.dp))
+            Button(onClick = { onMarcarListo(pedido) }, modifier = Modifier.fillMaxWidth()) {
+                Text("Apartado #${pedido.numero_apartado} listo")
             }
         }
     }

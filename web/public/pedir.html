@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Pide tu almuerzo</title>
+  <link rel="stylesheet" href="publico.css" />
+</head>
+<body>
+  <div class="pagina" id="pagina">
+    <header class="hero">
+      <h1>🍽️ Arma tu almuerzo</h1>
+      <p>Toca las fotos para elegir lo que quieres. Lo apartamos para la hora que nos indiques.</p>
+    </header>
+
+    <section class="panel">
+      <h2>Tus almuerzos</h2>
+      <div class="chips" id="chips"></div>
+      <p class="resumen" id="resumen"></p>
+    </section>
+
+    <div id="menu"></div>
+    <p id="menu-vacio" class="panel" hidden>Todavía no hay menú para hoy. Vuelve en un momento.</p>
+
+    <section class="panel" id="datos">
+      <h2>Tus datos</h2>
+      <div class="fila">
+        <div>
+          <label for="nombre">Nombre</label>
+          <input type="text" id="nombre" maxlength="100" autocomplete="name" />
+        </div>
+        <div>
+          <label for="celular">Celular</label>
+          <input type="tel" id="celular" maxlength="20" autocomplete="tel" inputmode="tel" />
+        </div>
+        <div>
+          <label for="hora">¿A qué hora lo necesitas?</label>
+          <input type="time" id="hora" />
+        </div>
+      </div>
+      <div id="error" class="mensaje error" hidden></div>
+    </section>
+  </div>
+
+  <div class="barra-pedir" id="barra">
+    <span class="info" id="info-barra"></span>
+    <button class="btn" id="btn-pedir" type="button">Pedir</button>
+  </div>
+
+  <script src="vendor/socket.io.min.js"></script>
+  <script src="pedir.js"></script>
+</body>
+</html>

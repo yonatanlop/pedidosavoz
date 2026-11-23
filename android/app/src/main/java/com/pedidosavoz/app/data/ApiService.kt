@@ -20,7 +20,10 @@ interface ApiService {
     ): Response<PedidoResponse>
 
     @GET("api/pedidos")
-    suspend fun listarPedidos(@Query("estado") estado: String): Response<List<PedidoResponse>>
+    suspend fun listarPedidos(
+        @Query("estado") estado: String,
+        @Query("apartado") apartado: Boolean? = null
+    ): Response<List<PedidoResponse>>
 
     @PATCH("api/pedidos/{id}/listo")
     suspend fun marcarListo(@Path("id") id: Int): Response<PedidoResponse>

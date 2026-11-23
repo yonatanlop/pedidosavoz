@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Administrar menú del día</title>
+  <link rel="stylesheet" href="publico.css" />
+</head>
+<body>
+  <div class="pagina">
+    <header class="hero">
+      <h1>🧑‍🍳 Menú del día</h1>
+      <p>Arma el menú: agrega platos con su foto y marca cuáles están hoy.</p>
+    </header>
+
+    <section class="panel" id="login">
+      <h2>Clave de administrador</h2>
+      <input type="password" id="clave" autocomplete="current-password" />
+      <p><button class="btn" id="btn-entrar" type="button">Entrar</button></p>
+      <div id="error-login" class="mensaje error" hidden></div>
+    </section>
+
+    <div id="contenido" hidden>
+      <section class="panel">
+        <h2>Agregar plato</h2>
+        <div class="fila">
+          <div>
+            <label for="n-nombre">Nombre</label>
+            <input type="text" id="n-nombre" maxlength="100" placeholder="Ej: Carne de cerdo" />
+          </div>
+          <div>
+            <label for="n-categoria">Categoría</label>
+            <select id="n-categoria">
+              <option value="sopa">Sopa</option>
+              <option value="arroz">Arroz</option>
+              <option value="proteina">Proteína</option>
+              <option value="grano">Grano / menestra (arveja, fríjol…)</option>
+              <option value="ensalada">Ensalada</option>
+              <option value="acompanante">Acompañante (plátano…)</option>
+              <option value="bebida">Bebida</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div>
+            <label for="n-foto">Foto (referencia)</label>
+            <input type="file" id="n-foto" accept="image/jpeg,image/png,image/webp" />
+          </div>
+        </div>
+        <p><button class="btn" id="btn-agregar" type="button">Agregar al catálogo</button></p>
+        <div id="mensaje" class="mensaje" hidden></div>
+      </section>
+
+      <section class="panel">
+        <h2>Catálogo <small id="resumen-cat" style="color:var(--dim);font-weight:400"></small></h2>
+        <div id="lista"></div>
+      </section>
+    </div>
+  </div>
+
+  <script src="vendor/socket.io.min.js"></script>
+  <script src="admin-menu.js"></script>
+</body>
+</html>

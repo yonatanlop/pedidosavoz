@@ -61,6 +61,16 @@ psql "$DATABASE_URL" -f src/db/init.sql
 - `GET /api/pedidos?estado=pendiente&fecha=2026-09-19` — lista pedidos (usado por la pantalla web: tablero con `estado=pendiente`, historial con `estado=listo`). Filtros opcionales.
 - `PATCH /api/pedidos/:id/listo` — marca un pedido como listo (usado por la pantalla de cocina). Guarda `listo_en` con la fecha/hora local de despacho.
 
+### Apartados
+
+Un pedido es **apartado** si la mesera empieza el dictado con "apartado ..." / "apartar ..." (el backend quita esa palabra y el "de"), o si llega con `apartado: true`. Los apartados no consumen `numero_turno` (queda en 0): tienen su propio `numero_apartado`, que reinicia cada dia. `GET /api/pedidos` acepta `apartado=true|false` para separarlos. Se marcan listos con el mismo `PATCH /api/pedidos/:id/listo`.
+
+### Menu del dia y pedidos online
+
+- `GET /api/menu` — publico. Items del menu de hoy con `agotado` (calculado contra la tabla `agotados` del dia, por coincidencia de palabras) e `imagen_url`.
+- `POST /api/menu/pedido-online` — publico. Body: `{ nombre, celular, hora_para: "HH:MM", almuerzos: [{ items: [id, ...] }, ...] }`. Cada almuerzo se guarda como un apartado (`origen: online`, mesera `Mesera_Online`) con su propio `numero_apartado`. Rechaza items agotados/inactivos. Limite: `MAX_ONLINE_POR_IP` (3) almuerzos por IP por dia (429). `req.ip` depende de `TRUST_PROXY` (2 = Caddy + nginx).
+- Administrador (header `x-admin-key: <ADMIN_KEY>`): `GET /api/menu?todos=1`, `POST /api/menu/items`, `PUT /api/menu/items/:id`, `DELETE /api/menu/items/:id`, `POST /api/menu/items/:id/agotado` (`{ agotado: true|false }`). Las imagenes se envian en base64 (`imagen_base64`, `imagen_mime`; max 2 MB) y se guardan en la base de datos.
+
 ### Platos agotados
 
 - `POST /api/agotados` — usado por el Modo cocina de la app Android (voz: "se acabo X" / "se termino X" / "ya no hay X"). Sin auth, igual que `marcarListo`.
@@ -72,6 +82,8 @@ psql "$DATABASE_URL" -f src/db/init.sql
 - Evento `pedido:nuevo` — se emite al crear un pedido, con el pedido completo.
 - Evento `pedido:listo` — se emite al marcar un pedido listo, con `{ id }`.
 - Evento `agotado:nuevo` — se emite al marcar un plato agotado, con el registro completo.
+- Evento `menu:actualizado` — el administrador cambio el menu (las paginas abiertas lo recargan).
+- `pedido:nuevo` tambien se emite para apartados (el pedido trae `apartado: true`).
 
 ## Variables de entorno
 

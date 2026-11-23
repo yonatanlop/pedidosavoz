@@ -10,6 +10,7 @@ import com.pedidosavoz.app.data.AgotadoRequest
 import com.pedidosavoz.app.data.ApiClient
 import com.pedidosavoz.app.data.PedidoResponse
 import com.pedidosavoz.app.data.SessionManager
+import com.pedidosavoz.app.voice.Anunciador
 import com.pedidosavoz.app.voice.VoiceState
 import com.pedidosavoz.app.voice.normalizarTexto
 import kotlinx.coroutines.Job
@@ -19,23 +20,29 @@ import kotlinx.coroutines.launch
 class CocinaViewModel(application: Application) : AndroidViewModel(application) {
 
     private val session = SessionManager(application)
+    private val anunciador = Anunciador(application)
 
     var activa by mutableStateOf(false)
         private set
     var pendientes by mutableStateOf<List<PedidoResponse>>(emptyList())
         private set
+    var apartados by mutableStateOf<List<PedidoResponse>>(emptyList())
+        private set
     var mensaje by mutableStateOf<String?>(null)
     var voiceState by mutableStateOf<VoiceState>(VoiceState.Idle)
 
     private var pollingJob: Job? = null
+    private var ultimoRecordatorio = 0L
 
     fun activar() {
         activa = true
         mensaje = null
         if (pollingJob?.isActive != true) {
+            ultimoRecordatorio = System.currentTimeMillis()
             pollingJob = viewModelScope.launch {
                 while (true) {
                     cargarPendientes()
+                    recordarApartados()
                     delay(4000)
                 }
             }
@@ -52,12 +59,32 @@ class CocinaViewModel(application: Application) : AndroidViewModel(application) 
     private suspend fun cargarPendientes() {
         try {
             val api = ApiClient.create(session.serverUrl)
-            val response = api.listarPedidos("pendiente")
+            val response = api.listarPedidos("pendiente", apartado = false)
             if (response.isSuccessful) {
                 pendientes = response.body().orEmpty()
             }
+            val respuestaApartados = api.listarPedidos("pendiente", apartado = true)
+            if (respuestaApartados.isSuccessful) {
+                apartados = respuestaApartados.body().orEmpty()
+            }
         } catch (e: Exception) {
             // Silencioso: se reintenta en el proximo ciclo de sondeo.
+        }
+    }
+
+    // Cada 10 minutos recuerda por voz que hay apartados sin atender.
+    private fun recordarApartados() {
+        if (apartados.isEmpty()) {
+            ultimoRecordatorio = System.currentTimeMillis()
+            return
+        }
+        if (System.currentTimeMillis() - ultimoRecordatorio >= INTERVALO_RECORDATORIO_MS) {
+            ultimoRecordatorio = System.currentTimeMillis()
+            val n = apartados.size
+            anunciador.decir(
+                if (n == 1) "Atencion, hay un apartado sin atender"
+                else "Atencion, hay $n apartados sin atender"
+            )
         }
     }
 
@@ -74,6 +101,11 @@ class CocinaViewModel(application: Application) : AndroidViewModel(application) 
             return
         }
 
+        if (normalizado.contains("apartad")) {
+            procesarApartadoListo(normalizado.substringAfter("apartad"))
+            return
+        }
+
         val numero = extraerNumeroPedido(texto)
         if (numero == null) {
             mensaje = "No entendi un numero de pedido: \"$texto\""
@@ -85,6 +117,21 @@ class CocinaViewModel(application: Application) : AndroidViewModel(application) 
             return
         }
         marcarListo(pedido)
+    }
+
+    // "apartado 3 listo": marca como listo el apartado con ese numero.
+    private fun procesarApartadoListo(resto: String) {
+        val numero = extraerNumeroPedido(resto)
+        if (numero == null) {
+            mensaje = "Dime el numero del apartado, por ejemplo \"apartado 3 listo\""
+            return
+        }
+        val apartado = apartados.filter { it.numero_apartado == numero }.maxByOrNull { it.id }
+        if (apartado == null) {
+            mensaje = "No hay un apartado pendiente #$numero"
+            return
+        }
+        marcarListo(apartado)
     }
 
     private fun marcarAgotado(nombrePlato: String) {
@@ -109,8 +156,10 @@ class CocinaViewModel(application: Application) : AndroidViewModel(application) 
                 val api = ApiClient.create(session.serverUrl)
                 val response = api.marcarListo(pedido.id)
                 if (response.isSuccessful) {
-                    mensaje = "Pedido #${pedido.numero_turno} marcado como listo"
+                    mensaje = if (pedido.apartado) "Apartado #${pedido.numero_apartado} marcado como listo"
+                    else "Pedido #${pedido.numero_turno} marcado como listo"
                     pendientes = pendientes.filter { it.id != pedido.id }
+                    apartados = apartados.filter { it.id != pedido.id }
                 } else {
                     mensaje = "No se pudo marcar el pedido #${pedido.numero_turno} (${response.code()})"
                 }
@@ -120,7 +169,13 @@ class CocinaViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    override fun onCleared() {
+        anunciador.apagar()
+        super.onCleared()
+    }
+
     companion object {
+        private const val INTERVALO_RECORDATORIO_MS = 10 * 60 * 1000L
         private val TRIGGERS_AGOTADO = listOf("se acabo", "se termino", "ya no hay")
 
         private val NUMEROS_TEXTO = mapOf(

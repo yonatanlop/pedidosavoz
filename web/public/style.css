@@ -138,6 +138,11 @@ main {
   margin: 0 auto;
 }
 
+.tablero .grid {
+  max-width: none;
+  margin: 0;
+}
+
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -179,7 +184,7 @@ main {
 
 .texto {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 1.6rem;
   line-height: 1.4;
   flex: 1;
   white-space: pre-wrap;
@@ -217,5 +222,192 @@ main {
 
   main {
     padding: 1rem;
+  }
+}
+
+/* ---------- Tablero: pendientes + apartados ---------- */
+
+.tablero .card-header {
+  font-size: 1.5rem;
+}
+
+.tablero .numero {
+  font-size: 2rem;
+  letter-spacing: 0.01em;
+}
+
+.tablero .hora {
+  font-size: 1.4rem;
+}
+
+.tablero .card-mesera {
+  font-size: 1.1rem;
+}
+
+.tablero .btn-listo {
+  font-size: 1.4rem;
+  padding: 1rem;
+}
+
+.contador {
+  display: inline-block;
+  min-width: 2.2rem;
+  padding: 0.05rem 0.6rem;
+  margin-left: 0.5rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #1b1200;
+  font-size: 1.3rem;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.contador-apartados {
+  background: #7c5cff;
+  color: #fff;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 440px);
+  gap: 1.5rem;
+  align-items: start;
+  padding: 1.5rem 2rem;
+}
+
+.layout main {
+  padding: 0;
+}
+
+.col-apartados {
+  position: sticky;
+  top: 5.5rem;
+  max-height: calc(100vh - 7rem);
+  overflow-y: auto;
+  background: var(--surface);
+  border: 2px solid #7c5cff;
+  border-radius: 16px;
+  padding: 1rem;
+}
+
+.col-apartados h2 {
+  margin: 0 0 1rem;
+  font-size: 1.6rem;
+  color: #b6a4ff;
+}
+
+.empty-chico {
+  font-size: 1.1rem;
+  margin: 1rem 0;
+}
+
+.lista-apartados {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.card-apartado {
+  border-left: 8px solid #7c5cff;
+  background: var(--surface-alt);
+}
+
+.card-apartado.pronto {
+  border-left-color: var(--accent);
+  background: rgba(245, 166, 35, 0.14);
+}
+
+.card-apartado.vencido {
+  border-left-color: var(--danger);
+  background: rgba(255, 92, 92, 0.16);
+  animation: latido 1.2s ease-in-out infinite;
+}
+
+@keyframes latido {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 92, 92, 0.0); }
+  50% { box-shadow: 0 0 0 6px rgba(255, 92, 92, 0.45); }
+}
+
+.para-hora {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.hora-grande {
+  font-size: 2.2rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.restante {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.card-apartado.pronto .restante { color: var(--accent); }
+.card-apartado.vencido .restante { color: var(--danger); }
+
+.cliente {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.etiqueta {
+  font-size: 0.85rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  background: #7c5cff;
+  color: #fff;
+}
+
+.alerta-apartados {
+  background: #7c5cff;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.9rem 1rem;
+  position: sticky;
+  top: 4.4rem;
+  z-index: 9;
+}
+
+.alerta-apartados.parpadeo {
+  animation: parpadeo 1s steps(2, start) infinite;
+}
+
+@keyframes parpadeo {
+  50% { background: var(--danger); }
+}
+
+.btn-sonido {
+  background: var(--surface-alt);
+  color: var(--text);
+  border: 2px solid var(--accent);
+  border-radius: 999px;
+  padding: 0.5rem 1.1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-sonido.activo {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+
+  .col-apartados {
+    position: static;
+    max-height: none;
+    order: -1;
   }
 }

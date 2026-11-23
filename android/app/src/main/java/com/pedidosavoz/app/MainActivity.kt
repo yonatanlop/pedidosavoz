@@ -38,6 +38,7 @@ class MainActivity : ComponentActivity() {
                     when {
                         cocinaViewModel.activa -> CocinaScreen(
                             pendientes = cocinaViewModel.pendientes,
+                            apartados = cocinaViewModel.apartados,
                             voiceState = cocinaViewModel.voiceState,
                             mensaje = cocinaViewModel.mensaje,
                             onMarcarListo = { cocinaViewModel.marcarListo(it) },

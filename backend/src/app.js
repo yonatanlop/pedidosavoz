@@ -5,11 +5,17 @@ const morgan = require('morgan');
 const authRoutes = require('./routes/authRoutes');
 const pedidosRouter = require('./routes/pedidosRoutes');
 const agotadosRouter = require('./routes/agotadosRoutes');
+const menuRouter = require('./routes/menuRoutes');
 
 function createApp(io) {
   const app = express();
 
   app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
+  // Detras de Caddy + nginx: asi req.ip es la IP real del cliente (limite por IP).
+  app.set('trust proxy', Number(process.env.TRUST_PROXY || 2));
+
+  // Las imagenes del menu llegan en base64; el resto de rutas usa el limite normal.
+  app.use('/api/menu', express.json({ limit: '4mb' }));
   app.use(express.json());
   app.use(morgan('dev'));
 
@@ -18,6 +24,7 @@ function createApp(io) {
   app.use('/api/auth', authRoutes);
   app.use('/api/pedidos', pedidosRouter(io));
   app.use('/api/agotados', agotadosRouter(io));
+  app.use('/api/menu', menuRouter(io));
 
   app.use((req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));
 
