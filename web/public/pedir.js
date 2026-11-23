@@ -162,7 +162,7 @@
     const llenos = almuerzos.filter((s) => s.size > 0);
     const nombre = document.getElementById('nombre').value.trim();
     const celular = document.getElementById('celular').value.trim();
-    const hora = document.getElementById('hora').value;
+    const hora = horaElegida;
 
     if (!llenos.length) return mostrarError('Elige al menos un plato para tu almuerzo.');
     if (nombre.length < 2) return mostrarError('Escribe tu nombre.');
@@ -203,7 +203,7 @@
     pagina.innerHTML = '';
     const panel = el('section', 'panel gracias');
     panel.appendChild(el('h1', '', '¡Listo, ' + nombre + '! ✅'));
-    panel.appendChild(el('p', '', 'Tu pedido quedó apartado para las ' + data.hora_para + '. Guarda estos números:'));
+    panel.appendChild(el('p', '', 'Tu pedido quedó apartado para las ' + formatHora12(data.hora_para) + '. Guarda estos números:'));
     data.apartados.forEach((a) => panel.appendChild(el('div', 'num', 'Apartado #' + a.numero_apartado)));
     data.apartados.forEach((a) => panel.appendChild(el('p', 'resumen', '#' + a.numero_apartado + ': ' + a.texto_pedido)));
     const otro = el('button', 'btn', 'Hacer otro pedido');
@@ -211,6 +211,112 @@
     panel.appendChild(otro);
     pagina.appendChild(panel);
   }
+
+  /* ---------- Selector de hora (reloj) ---------- */
+
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const dial = document.getElementById('reloj-dial');
+  const panelReloj = document.getElementById('reloj-panel');
+  const btnHora = document.getElementById('hora-btn');
+  const relojH = document.getElementById('reloj-h');
+  const relojM = document.getElementById('reloj-m');
+  const btnAm = document.getElementById('reloj-am');
+  const btnPm = document.getElementById('reloj-pm');
+  const ayuda = document.getElementById('reloj-ayuda');
+
+  let horaElegida = ''; // "HH:MM" en 24 h, lo que recibe el backend
+  const reloj = { h: 12, m: 0, ampm: 'PM', modo: 'h' };
+
+  const pad2 = (n) => String(n).padStart(2, '0');
+
+  function svgEl(tag, attrs) {
+    const e = document.createElementNS(SVG_NS, tag);
+    Object.keys(attrs).forEach((k) => e.setAttribute(k, attrs[k]));
+    return e;
+  }
+
+  function posicion(grados, radio) {
+    const rad = (grados * Math.PI) / 180;
+    return { x: 130 + radio * Math.sin(rad), y: 130 - radio * Math.cos(rad) };
+  }
+
+  function dibujarReloj() {
+    dial.innerHTML = '';
+    dial.appendChild(svgEl('circle', { cx: 130, cy: 130, r: 124, fill: '#fbefdc' }));
+
+    const enHoras = reloj.modo === 'h';
+    const gradosSel = enHoras ? reloj.h * 30 : reloj.m * 6;
+    const fin = posicion(gradosSel, 92);
+    dial.appendChild(svgEl('line', { x1: 130, y1: 130, x2: fin.x, y2: fin.y, stroke: '#e8590c', 'stroke-width': 3 }));
+    dial.appendChild(svgEl('circle', { cx: 130, cy: 130, r: 5, fill: '#e8590c' }));
+    dial.appendChild(svgEl('circle', { cx: fin.x, cy: fin.y, r: 21, fill: '#e8590c' }));
+
+    for (let i = 1; i <= 12; i++) {
+      const valor = enHoras ? i : (i * 5) % 60;
+      const p = posicion(i * 30, 92);
+      const elegido = enHoras ? valor === reloj.h : valor === reloj.m;
+      const t = svgEl('text', {
+        x: p.x, y: p.y, 'text-anchor': 'middle', 'dominant-baseline': 'central',
+        'font-size': 17, 'font-weight': 700, fill: elegido ? '#fff' : '#2b2118',
+        'pointer-events': 'none',
+      });
+      t.textContent = enHoras ? String(valor) : pad2(valor);
+      dial.appendChild(t);
+    }
+
+    relojH.textContent = String(reloj.h);
+    relojM.textContent = pad2(reloj.m);
+    relojH.classList.toggle('activo', enHoras);
+    relojM.classList.toggle('activo', !enHoras);
+    btnAm.classList.toggle('activo', reloj.ampm === 'AM');
+    btnPm.classList.toggle('activo', reloj.ampm === 'PM');
+    ayuda.textContent = enHoras ? 'Toca la hora en el reloj' : 'Ahora toca los minutos';
+  }
+
+  function valorDesdePuntero(ev) {
+    const r = dial.getBoundingClientRect();
+    const dx = ev.clientX - (r.left + r.width / 2);
+    const dy = ev.clientY - (r.top + r.height / 2);
+    let grados = (Math.atan2(dx, -dy) * 180) / Math.PI;
+    if (grados < 0) grados += 360;
+    const paso = Math.round(grados / 30) % 12; // 0..11
+    if (reloj.modo === 'h') reloj.h = paso === 0 ? 12 : paso;
+    else reloj.m = paso * 5;
+    dibujarReloj();
+  }
+
+  let arrastrando = false;
+  dial.addEventListener('pointerdown', (ev) => {
+    arrastrando = true;
+    try { dial.setPointerCapture(ev.pointerId); } catch (e) { /* sin captura: igual funciona */ }
+    valorDesdePuntero(ev);
+  });
+  dial.addEventListener('pointermove', (ev) => { if (arrastrando) valorDesdePuntero(ev); });
+  dial.addEventListener('pointerup', () => {
+    if (!arrastrando) return;
+    arrastrando = false;
+    if (reloj.modo === 'h') { reloj.modo = 'm'; dibujarReloj(); } // pasa solo a los minutos
+  });
+
+  relojH.addEventListener('click', () => { reloj.modo = 'h'; dibujarReloj(); });
+  relojM.addEventListener('click', () => { reloj.modo = 'm'; dibujarReloj(); });
+  btnAm.addEventListener('click', () => { reloj.ampm = 'AM'; dibujarReloj(); });
+  btnPm.addEventListener('click', () => { reloj.ampm = 'PM'; dibujarReloj(); });
+
+  btnHora.addEventListener('click', () => {
+    reloj.modo = 'h';
+    panelReloj.hidden = false;
+    dibujarReloj();
+    panelReloj.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  });
+  document.getElementById('reloj-cancelar').addEventListener('click', () => { panelReloj.hidden = true; });
+  document.getElementById('reloj-ok').addEventListener('click', () => {
+    const h24 = (reloj.h % 12) + (reloj.ampm === 'PM' ? 12 : 0);
+    horaElegida = pad2(h24) + ':' + pad2(reloj.m);
+    btnHora.textContent = '🕐 ' + formatHora12(horaElegida);
+    btnHora.classList.add('elegida');
+    panelReloj.hidden = true;
+  });
 
   const socket = io();
   socket.on('menu:actualizado', cargarMenu);

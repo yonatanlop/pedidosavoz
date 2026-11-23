@@ -57,16 +57,43 @@
     });
   }
 
-  // La clave guardada ya no sirve (cambiaron la ADMIN_KEY): vuelve a pedirla.
-  function pedirClaveDeNuevo() {
+  // Cierra la sesion: borra la clave de la memoria y del navegador y vuelve al login.
+  function cerrarSesion(mensaje, tipo) {
     try { sessionStorage.removeItem('adminKey'); } catch (e) { /* sin storage */ }
     contenidoEl.hidden = true;
     loginEl.hidden = false;
-    errorLogin.textContent = clave ? 'La clave es incorrecta o cambió. Escríbela de nuevo.' : '';
-    errorLogin.hidden = !clave;
+    errorLogin.textContent = mensaje || '';
+    errorLogin.className = 'mensaje ' + (tipo || 'error');
+    errorLogin.hidden = !mensaje;
     claveEl.value = '';
     clave = '';
+    listaEl.innerHTML = '';
+    aviso('');
   }
+
+  // La clave guardada ya no sirve (cambiaron la ADMIN_KEY): vuelve a pedirla.
+  function pedirClaveDeNuevo() {
+    cerrarSesion(clave ? 'La clave es incorrecta o cambió. Escríbela de nuevo.' : '');
+  }
+
+  /* ---------- Inactividad ---------- */
+
+  const INACTIVIDAD_MS = 5 * 60 * 1000;
+  let ultimaActividad = Date.now();
+
+  ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach((ev) => {
+    document.addEventListener(ev, () => { ultimaActividad = Date.now(); }, { passive: true });
+  });
+
+  // Se compara con la hora real (no con un temporizador unico) para que tambien
+  // cierre si el computador estuvo suspendido o la pestana en segundo plano.
+  setInterval(() => {
+    if (!contenidoEl.hidden && Date.now() - ultimaActividad >= INACTIVIDAD_MS) {
+      cerrarSesion('Sesión cerrada por inactividad. Escribe la clave para continuar.', 'info');
+    }
+  }, 10 * 1000);
+
+  document.getElementById('btn-salir').addEventListener('click', () => cerrarSesion('Sesión cerrada.', 'info'));
 
   async function cargar() {
     try {

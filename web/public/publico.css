@@ -151,7 +151,40 @@ input:focus, select:focus { outline: none; border-color: var(--primary); }
   background: var(--sel); border: 2px solid var(--primary); font-size: 1.6rem; font-weight: 800;
 }
 
+/* Selector de hora (reloj) */
+.hora-btn {
+  width: 100%; font: inherit; text-align: left; cursor: pointer;
+  padding: 0.7rem 0.8rem; border: 2px solid var(--border); border-radius: 10px; background: #fff; color: var(--text);
+}
+.hora-btn.elegida { border-color: var(--primary); font-weight: 700; }
+
+.reloj-panel {
+  max-width: 330px; margin: 1rem auto 0; padding: 1rem; text-align: center;
+  background: #fff; border: 2px solid var(--primary); border-radius: 16px;
+}
+.reloj-cabecera { display: flex; align-items: center; justify-content: center; gap: 0.25rem; }
+.reloj-dos { font-size: 2.6rem; font-weight: 700; }
+.reloj-num {
+  font: inherit; font-size: 2.6rem; font-weight: 700; min-width: 4.2rem; padding: 0.1rem 0.4rem;
+  border: none; border-radius: 10px; background: #f1e7d8; color: var(--text); cursor: pointer;
+}
+.reloj-num.activo { background: var(--primary); color: #fff; }
+.reloj-ampm { display: flex; flex-direction: column; gap: 0.3rem; margin-left: 0.6rem; }
+.reloj-ampm button {
+  font: inherit; font-weight: 700; padding: 0.35rem 0.7rem; border: 2px solid var(--border);
+  border-radius: 8px; background: #fff; color: var(--text); cursor: pointer;
+}
+.reloj-ampm button.activo { background: var(--primary); border-color: var(--primary); color: #fff; }
+.reloj-ayuda { margin: 0.5rem 0 0; color: var(--dim); font-size: 0.95rem; }
+.reloj-dial { width: 100%; max-width: 280px; touch-action: none; cursor: pointer; user-select: none; }
+.reloj-acciones { display: flex; gap: 0.6rem; justify-content: center; margin-top: 0.5rem; }
+
 /* Administrador */
+.barra-sesion {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+  margin: 0.5rem 0; color: var(--dim); font-size: 0.9rem;
+}
+.mensaje.info { background: #fff3bf; color: #7a5b00; }
 .item-admin { display: flex; gap: 0.9rem; align-items: center; padding: 0.7rem 0; border-top: 1px solid var(--border); flex-wrap: wrap; }
 .item-admin:first-of-type { border-top: none; }
 .item-admin img, .item-admin .sin-foto {

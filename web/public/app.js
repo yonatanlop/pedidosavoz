@@ -22,7 +22,7 @@
   let sonidoActivo = false;
 
   function formatHora(horaStr) {
-    return horaStr ? horaStr.slice(0, 5) : '';
+    return formatHora12(horaStr);
   }
 
   function escapeHtml(str) {
@@ -274,7 +274,7 @@
   }
 
   function actualizarReloj() {
-    relojEl.textContent = new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
+    relojEl.textContent = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   }
 
   actualizarReloj();

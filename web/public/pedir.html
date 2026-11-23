@@ -35,8 +35,26 @@
           <input type="tel" id="celular" maxlength="20" autocomplete="tel" inputmode="tel" />
         </div>
         <div>
-          <label for="hora">¿A qué hora lo necesitas?</label>
-          <input type="time" id="hora" />
+          <label for="hora-btn">¿A qué hora lo necesitas?</label>
+          <button type="button" id="hora-btn" class="hora-btn">🕐 Elegir hora</button>
+        </div>
+      </div>
+
+      <div id="reloj-panel" class="reloj-panel" hidden>
+        <div class="reloj-cabecera">
+          <button type="button" id="reloj-h" class="reloj-num activo">12</button>
+          <span class="reloj-dos">:</span>
+          <button type="button" id="reloj-m" class="reloj-num">00</button>
+          <div class="reloj-ampm">
+            <button type="button" id="reloj-am">AM</button>
+            <button type="button" id="reloj-pm" class="activo">PM</button>
+          </div>
+        </div>
+        <p class="reloj-ayuda" id="reloj-ayuda">Toca la hora en el reloj</p>
+        <svg id="reloj-dial" class="reloj-dial" viewBox="0 0 260 260" role="img" aria-label="Reloj para elegir la hora"></svg>
+        <div class="reloj-acciones">
+          <button type="button" id="reloj-cancelar" class="btn sec">Cancelar</button>
+          <button type="button" id="reloj-ok" class="btn">Listo</button>
         </div>
       </div>
       <div id="error" class="mensaje error" hidden></div>
@@ -49,6 +67,7 @@
   </div>
 
   <script src="vendor/socket.io.min.js"></script>
+  <script src="hora.js"></script>
   <script src="pedir.js"></script>
 </body>
 </html>

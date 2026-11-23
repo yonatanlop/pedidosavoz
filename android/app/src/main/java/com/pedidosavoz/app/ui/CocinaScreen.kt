@@ -108,7 +108,7 @@ private fun TarjetaPedidoCocina(pedido: PedidoResponse, onMarcarListo: (PedidoRe
                     "${if (pedido.turno == "almuerzo") "Almuerzo" else "Desayuno"} #${pedido.numero_turno}",
                     style = MaterialTheme.typography.titleMedium
                 )
-                Text(pedido.hora_creacion.take(5), color = MaterialTheme.colorScheme.primary)
+                Text(formatearHora12(pedido.hora_creacion), color = MaterialTheme.colorScheme.primary)
             }
             Spacer(Modifier.height(4.dp))
             Text(pedido.mesera.nombre, style = MaterialTheme.typography.bodySmall)
@@ -131,7 +131,7 @@ private fun TarjetaApartadoCocina(pedido: PedidoResponse, onMarcarListo: (Pedido
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text("Apartado #${pedido.numero_apartado}", style = MaterialTheme.typography.titleMedium)
-                Text(pedido.hora_para ?: "Sin hora", color = MaterialTheme.colorScheme.tertiary)
+                Text(if (pedido.hora_para.isNullOrBlank()) "Sin hora" else formatearHora12(pedido.hora_para), color = MaterialTheme.colorScheme.tertiary)
             }
             if (pedido.cliente_nombre != null) {
                 Spacer(Modifier.height(4.dp))

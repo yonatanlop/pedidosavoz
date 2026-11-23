@@ -13,7 +13,7 @@
   }
 
   function formatHora(horaStr) {
-    return horaStr ? horaStr.slice(0, 5) : '';
+    return formatHora12(horaStr);
   }
 
   function escapeHtml(str) {
